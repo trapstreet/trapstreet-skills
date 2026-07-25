@@ -29,10 +29,19 @@ everything below assumes `tp` already runs.
 ## Before writing anything: interview
 
 1. **Which task, and where does it live?** A local path (most common when
-   the task repo is checked out nearby) or a `git+URL`. If local, you'll
-   need the exact relative path from wherever each `trap.yaml` ends up --
-   get this right per-file (see Layout below), since a wrong relative depth
-   is a common mistake.
+   the task repo is checked out nearby), a `git+URL`, or a trapstreet.run task page
+   (`https://trapstreet.run/tasks/<slug>`). For the trapstreet.run case, resolve it via the
+   public API rather than fetching the page itself -- faster, more reliable, and doesn't depend
+   on page layout or content-blob parsing:
+   ```bash
+   curl -s https://trapstreet.run/api/tasks/<slug> | python3 -m json.tool
+   # -> task.latest.{repo_url, commit_sha, repo_path}
+   ```
+   Assemble `git+<repo_url>@<commit_sha>#subdirectory=<repo_path>` yourself from those three
+   fields -- don't scrape the task's web page for this, and don't ask the user to copy a git URL
+   off it by hand. If local, you'll need the exact relative path from wherever each `trap.yaml`
+   ends up -- get this right per-file (see Layout below), since a wrong relative depth is a
+   common mistake.
 2. **Which of the three starting points is this?** (see below) -- from
    scratch, wrapping an existing `solution.py`, or adapting an existing
    external project. This determines whether the scaffold script writes a
