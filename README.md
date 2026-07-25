@@ -5,12 +5,15 @@ Each subdirectory is a self-contained, independently installable skill.
 
 | Skill | Use it to |
 |---|---|
+| [`trapstreet-setup`](./trapstreet-setup) | Install and authorize the `tp` CLI -- the one-time step before either skill below can run anything. |
 | [`trapstreet-solution-scaffold`](./trapstreet-solution-scaffold) | Scaffold a submission-ready solution against an *existing* trapstreet.run task -- from scratch, wrapping existing code, or adapting an external project. |
 | [`trapstreet-task-scaffold`](./trapstreet-task-scaffold) | Design and scaffold a *new* trapstreet.run task to evaluate a given agent/skill/tool. |
 
-They're complementary and cover opposite directions: one takes a task and
-builds a solution against it, the other takes an agent/skill and builds a
-task to evaluate it.
+The two scaffold skills are complementary and cover opposite directions: one takes a task and
+builds a solution against it, the other takes an agent/skill and builds a task to evaluate it.
+`trapstreet-setup` is a prerequisite for `trapstreet-solution-scaffold` (which needs `tp` to run
+and submit) -- install it alongside that one. `trapstreet-task-scaffold` doesn't invoke `tp` at
+all, so it has no dependency on `trapstreet-setup`.
 
 ## Installing a skill
 
@@ -24,6 +27,7 @@ then copy (or symlink) whichever skill(s) you want:
 
 ```bash
 git clone https://github.com/trapstreet/trapstreet-skills.git
+cp -r trapstreet-skills/trapstreet-setup ~/.claude/skills/trapstreet-setup
 cp -r trapstreet-skills/trapstreet-solution-scaffold ~/.claude/skills/trapstreet-solution-scaffold
 cp -r trapstreet-skills/trapstreet-task-scaffold ~/.claude/skills/trapstreet-task-scaffold
 ```

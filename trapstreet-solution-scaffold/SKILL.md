@@ -10,6 +10,9 @@ helps diagnose the real submission failures this ecosystem produces. Built
 from repeated real incidents, not theory -- every gotcha below actually
 happened.
 
+`tp` missing, or `tp auth status` shows no valid pairing? Hand off to `trapstreet-setup` first --
+everything below assumes `tp` already runs.
+
 ## Ground rules
 
 - Never read the task's `expected/`, `judge.py`, or `grader.py` to construct or embellish an
@@ -36,8 +39,18 @@ happened.
    template `solution.py` for you or leaves that part to you.
 3. **One model, or several to compare?** This determines the layout (see
    below). If several: which providers/models exactly?
-4. **Model IDs.** Never guess -- verify the exact model ID against that provider's own API before
-   writing it anywhere. Every provider gets checked the same way, including Anthropic:
+4. **API keys, then model IDs.** Before verifying anything, confirm the user actually has an API
+   key for each provider in play -- ask directly if unsure; don't assume `.env` has real values
+   just because `.env.example` exists. A missing key isn't obvious until `solution.py` crashes on
+   a bare `KeyError` at runtime, so catch it here instead of there. If it's missing, point to
+   where to get one and pause until the user has it:
+   - Anthropic: https://console.anthropic.com/settings/keys
+   - OpenRouter: https://openrouter.ai/keys
+   - Any other provider: its own dashboard/account settings page
+
+   Once a key is confirmed present, never guess the model ID -- verify the exact ID against that
+   provider's own API before writing it anywhere. Every provider gets checked the same way,
+   including Anthropic:
    ```bash
    # Anthropic
    curl -s https://api.anthropic.com/v1/models -H "x-api-key: $ANTHROPIC_API_KEY" -H "anthropic-version: 2023-06-01"
@@ -158,6 +171,10 @@ dispatch functions handle the API mechanics; `build_prompt()` is the one
 hook meant to be edited.
 
 ## Before the first run
+
+Before any of this: confirm `.env` actually has real values, not just `.env.example`'s blanks
+copied over. If a key turns out to be missing only now, stop and get it (the interview's API keys
+step above has where to look) rather than let the first real run crash on it.
 
 Three things to get right before `tp run` touches anything -- in this order, because scaffolding
 starts from nothing: no cost spent yet, no git history yet, no task-version check done yet.
