@@ -10,6 +10,19 @@ helps diagnose the real submission failures this ecosystem produces. Built
 from repeated real incidents, not theory -- every gotcha below actually
 happened.
 
+## Ground rules
+
+- Never read the task's `expected/`, `judge.py`, or `grader.py` to construct or embellish an
+  answer -- only the IO-contract part of `traptask.yaml` (inputs/outputs shape) is fair game,
+  and only as much of it as writing the adapter/solution.py actually requires.
+- `tp run`/`tp submit` pause on two confirmation gates -- remote-source (about to execute code
+  pulled from a repo) and unanchored (no git provenance, won't rank). Both are the user's call,
+  never yours: explain the consequence in plain words, recommend an answer, let them decide (see
+  "Gates and consent" below). Never pass `--trust-remote`/`--allow-unanchored` on your own
+  initiative.
+- Never submit to the public leaderboard without the user's explicit go-ahead on that specific
+  submission -- a prior yes does not carry forward to the next run.
+
 ## Before writing anything: interview
 
 1. **Which task, and where does it live?** A local path (most common when
@@ -97,14 +110,23 @@ so no separate `pyproject.toml`/`uv.lock` is needed), plus one subdirectory
 per variant holding only a `trap.yaml`. Each variant's `cmd:` bakes the
 provider and model in as literal CLI arguments. **This is the load-bearing
 design decision** -- see "Why not a MODEL env var" below for the real
-incident that motivates it. `tp run --solution ./<variant-dir>` (or `cd
-<variant-dir> && tp run`) runs one variant; there's no built-in "run every
-variant at once" -- each is independent from trap-cli's point of view.
+incident that motivates it. As of trap-cli v0.0.8, `SOLUTION` is a positional
+argument and the task alias is a `--task` flag (older CLIs had it the other
+way around -- check `tp run --help` if unsure which you have): `tp run
+./<variant-dir> --task <alias>` (or `cd <variant-dir> && tp run --task
+<alias>`) runs one variant; there's no built-in "run every variant at once"
+-- each is independent from trap-cli's point of view.
 
 Read `references/trap-yaml-schema.md` for the exact schema, the
 model-drift rationale in full, and the manifest contract.
 
 ## Generating the files
+
+The generated `trap.yaml` only targets the current (new-generation) `trap-cli` schema --
+`tp run --help 2>&1 | grep -c -- "--trust-remote"` (>=1 = new generation). If the installed CLI
+is old-generation (`trapstreet-cli`, no match), these templates will not work as-is; have the
+user upgrade first (`uv tool uninstall trapstreet-cli && uv tool install trap-cli`) rather than
+hand-adapting the schema.
 
 Use the bundled script rather than hand-writing every file -- it's
 deterministic and gets the escaping/relative-path plumbing right:
@@ -133,7 +155,32 @@ system prompt). The template's `call_anthropic()`/`call_openrouter()`
 dispatch functions handle the API mechanics; `build_prompt()` is the one
 hook meant to be edited.
 
-## Before running: check provenance
+## Before the first run
+
+Three things to get right before `tp run` touches anything -- in this order, because scaffolding
+starts from nothing: no cost spent yet, no git history yet, no task-version check done yet.
+
+### 1. Cost -- ask before any paid call happens
+
+`tp run` never talks to the platform, but the solution's own API calls bill normally, and this
+skill often multiplies the bill: several variants (one per provider/model from the interview)
+times however many cases the task has. Classify before running anything; can't tell = treat as
+paid and ask:
+
+- **No paid calls, confirmed** (deterministic code -- no LLM SDK, no API key in env/.env, no HTTP
+  to a paid endpoint): free to iterate, skip the rest of this section.
+- **Paid calls**: spending the user's money is a gate with the same weight as the CLI's own
+  safety gates -- no paid call happens before the user's OK, the first smoke test included.
+  Estimate one full pass per variant (case count from the task's `traptask.yaml` x calls per case
+  x that provider's price; order of magnitude is enough), total the whole plan across every
+  variant, and get consent through a structured question (see "Gates and consent" below). Can't
+  estimate confidently? Get consent for a **1-case smoke** first: trim a local copy of the task's
+  cases to one, point a scratch `trap.yaml` at it, run it, read the real per-case cost off
+  `report.json`, then delete the scratch copy (a forgotten copy is the same stale-version trap as
+  running against an unpinned task checkout). Smoke numbers are wiring evidence, never a result --
+  they are not the submission candidate.
+
+### 2. Task provenance
 
 A run only submits successfully if the **task's** local git commit is
 actually registered on trapstreet.run. This is a real, repeatedly-hit
@@ -152,36 +199,55 @@ content is confirmed identical) and explicitly flags that the checkout
 option needs the repo owner's confirmation before doing it, since it's a
 detached-HEAD state change on a possibly-shared checkout.
 
-## Making the solution rankable
+### 3. Solution provenance -- git init early, anchor before you spend for real
 
-Getting a submission to *succeed* (task provenance resolves) is different
-from getting it to *show up on the leaderboard* (both task AND solution
-provenance must resolve). The solution needs:
+The scaffold script does not run `git init` or create a GitHub repo (previous section) -- so the
+very first `tp run` in a freshly scaffolded directory has no git history at all, which trips the
+CLI's unanchored gate immediately. `git init` locally is free and safe to do without asking (it
+touches nothing public); the public push is the part that needs the user's go-ahead.
 
-- Its own dedicated git repo -- not a shared monorepo. A monorepo where
-  *anything* else is dirty nulls out the whole repo's provenance ("local
-  never ranks"), so even a solution folder that's itself perfectly clean
-  gets shut out if a sibling folder has uncommitted changes.
-- That repo pushed to a public remote.
-- A clean working tree at the exact moment `tp run` executes -- if you edit
-  `trap.yaml` (e.g. switching a model), you must commit + push *before*
-  re-running, or the new run's provenance won't reflect the edit at all
-  (this has bitten real usage twice: editing the yaml without committing
-  first, and `tp submit` silently re-uploading a stale pre-existing report
-  instead of a fresh run).
+Sequencing matters more than the init itself, because `tp run` bakes git provenance into
+`report.json` **at the moment it runs** -- a run born from a dirty or unpushed tree is unanchored
+forever, and committing afterwards cannot retrofit it; the only fix is running again, at full
+price if the pass was paid:
+- **Free passes**: iterate unanchored freely; before the run meant to be the submission
+  candidate, commit + push (with the user's OK), then run.
+- **Paid passes**: get the wiring right on the 1-case smoke first (smoke runs are unanchored too,
+  and that is expected -- they are not a submission candidate anyway), then commit + push, and
+  make the **first full-price pass per variant** the submittable one. Never let a full-price pass
+  run unanchored "just to test" -- that silently doubles the bill, and the user may not have
+  budget for the second half.
+
+Also applies mid-iteration: if you edit `trap.yaml` after the repo is anchored (e.g. switching a
+model), commit + push again *before* re-running, or the new run's provenance will not reflect the
+edit (bitten twice in real usage: an unstaged yaml edit, and `tp submit` silently re-uploading a
+stale pre-existing report instead of the fresh run).
+
+One more thing while here: give each solution **its own dedicated git repo**, not a shared
+monorepo -- a monorepo where anything else is dirty nulls out the whole repo's provenance ("local
+never ranks"), so a perfectly clean solution folder still gets shut out by an unrelated dirty
+sibling.
+
+## Gates and consent
+
+The CLI's two confirmation gates (remote-source, unanchored) and the cost gate above are all the
+user's decisions, not yours -- explain, don't relay: the gate vocabulary and flag names in this
+document are for you, not for them. Ask through the harness's structured question tool when one
+exists (one question per gate, plain words in the question and option descriptions, a marked
+recommendation); fall back to plain text only when no such tool exists. For the remote-source
+gate, say whose code is about to run -- "this task's judging code, from the task repo you pointed
+at" reads very differently depending on whether that repo is the user's own, and the
+recommendation should reflect that.
 
 ## Submitting
 
-Try `tp submit <task-alias> --solution <path>` first. If it reports `status
+Try `tp submit <path> --task <task-alias>` first (positional `SOLUTION` + `--task` flag,
+as of trap-cli v0.0.8 -- older CLIs used `--solution <path> <task-alias>` instead). If it reports `status
 ✗ failed, score None` on what looks like a genuinely valid report, that's a
 known historical CLI bug -- `uv tool upgrade trap-cli` first in case it's
 been fixed, and if not, fall back to POSTing the report directly (exact
-command in `references/trap-yaml-schema.md`).
-
-**Never submit to the public leaderboard without the user's explicit
-go-ahead on that specific submission** -- this is a standing rule, not a
-one-time confirmation. A prior "yes" to submit doesn't carry forward to the
-next run.
+command in `references/trap-yaml-schema.md`). The go-ahead requirement is in Ground rules above --
+it applies here without exception.
 
 ## Why not a MODEL env var (the short version)
 

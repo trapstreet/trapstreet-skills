@@ -18,11 +18,12 @@ guards against.
 
 ## Installing
 
-Copy (or symlink) this directory into your Claude Code skills folder:
+This skill now lives in the consolidated [`trapstreet-skills`](https://github.com/trapstreet/trapstreet-skills)
+repo. Clone that repo, then copy (or symlink) this directory into your Claude Code skills folder:
 
 ```bash
-git clone https://github.com/trapstreet/trapstreet-solution-scaffold.git \
-  ~/.claude/skills/trapstreet-solution-scaffold
+git clone https://github.com/trapstreet/trapstreet-skills.git
+cp -r trapstreet-skills/trapstreet-solution-scaffold ~/.claude/skills/trapstreet-solution-scaffold
 ```
 
 ## Contents

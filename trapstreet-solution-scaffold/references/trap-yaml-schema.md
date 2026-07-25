@@ -101,8 +101,12 @@ the report directly:
 API_KEY=$(python3 -c "import json; print(json.load(open(__import__('os').path.expanduser('~/.config/trapstreet/auth.json')))['api_key'])")
 curl -s -X POST https://trapstreet.run/api/submit \
   -H "Authorization: Bearer $API_KEY" -H "Content-Type: application/json" \
-  --data-binary @.trap/<task>/<run-timestamp>/report.json
+  --data-binary @.trap/runs/<solution-key>/<task-alias>/<run-timestamp>/report.json
 ```
+
+(Path shape as of trap-cli v0.0.7+ -- workspace layout gained a solution-keyed segment and there's
+no `latest` symlink; older CLIs used the shorter `.trap/<task>/<run-timestamp>/report.json`. Check
+what's actually on disk if unsure which shape your installed CLI writes.)
 
 Try the real `tp submit` first — `uv tool upgrade trap-cli` before assuming
 this bug is still present; it may have been fixed upstream.
