@@ -128,11 +128,12 @@ one per variant subdirectory.
 
 ## Multi-provider note
 
-Only Anthropic model IDs can be verified against an authoritative catalog
-from within this skill (defer to the `claude-api` skill's model table —
-never guess a Claude model ID). Other providers (OpenRouter, OpenAI direct,
-etc.) need their own verification — e.g. for OpenRouter, hit
-`GET https://openrouter.ai/api/v1/models` and confirm the exact model slug
-exists before writing it into a trap.yaml. Guessed non-Anthropic model IDs
-have been wrong before (e.g. a bare `gpt-5.6` doesn't exist on OpenRouter —
-only suffixed variants like `openai/gpt-5.6-luna-pro` do).
+Every provider gets verified the same way: hit its own model-listing endpoint before writing an
+ID into a trap.yaml. Anthropic: `GET https://api.anthropic.com/v1/models` (headers `x-api-key`,
+`anthropic-version`) — in a Claude Code session that has it installed, the `claude-api` skill is
+a faster shortcut over the same catalog, but the direct endpoint works with no dependency on any
+particular tool. OpenRouter: `GET https://openrouter.ai/api/v1/models`. OpenAI direct and other
+providers: their own equivalent listing endpoint. Guessed model IDs have been wrong on every
+provider checked so far — a bare `gpt-5.6` doesn't exist on OpenRouter (only suffixed variants
+like `openai/gpt-5.6-luna-pro` do), and Claude names have had hallucinated dates or made-up
+version numbers appended.

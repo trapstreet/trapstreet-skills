@@ -36,18 +36,20 @@ happened.
    template `solution.py` for you or leaves that part to you.
 3. **One model, or several to compare?** This determines the layout (see
    below). If several: which providers/models exactly?
-4. **Model IDs.** For Anthropic models, defer to the `claude-api` skill's
-   model catalog -- never guess a Claude model ID, several have been wrong
-   before (dates appended that don't belong, made-up version numbers like
-   "claude-sonnet-5" that don't exist). For non-Anthropic providers
-   (OpenRouter, etc.), verify the exact model slug against that provider's
-   own API before writing it anywhere -- e.g. for OpenRouter:
+4. **Model IDs.** Never guess -- verify the exact model ID against that provider's own API before
+   writing it anywhere. Every provider gets checked the same way, including Anthropic:
    ```bash
+   # Anthropic
+   curl -s https://api.anthropic.com/v1/models -H "x-api-key: $ANTHROPIC_API_KEY" -H "anthropic-version: 2023-06-01"
+   # OpenRouter
    curl -s https://openrouter.ai/api/v1/models -H "Authorization: Bearer $OPENROUTER_API_KEY" \
      | python3 -c "import json,sys; print([m['id'] for m in json.load(sys.stdin)['data'] if '<keyword>' in m['id']])"
    ```
-   A plausible-looking bare model name (e.g. `gpt-5.6`) may not exist --
-   only specific suffixed variants might (e.g. `openai/gpt-5.6-luna-pro`).
+   (In a Claude Code session that has it installed, the `claude-api` skill is a faster shortcut
+   covering the same Anthropic catalog -- use it if available, but the curl above works with no
+   dependency on any particular tool.) A plausible-looking bare model name (e.g. `gpt-5.6`) may
+   not exist -- only specific suffixed variants might (e.g. `openai/gpt-5.6-luna-pro`), and Claude
+   names get hallucinated the same way (appended dates, made-up versions like "claude-sonnet-5").
    Ask the user to pick if there's ambiguity; don't guess.
 5. **Repo name / destination.** Where should the solution folder live, and
    what should the eventual GitHub repo be called?
