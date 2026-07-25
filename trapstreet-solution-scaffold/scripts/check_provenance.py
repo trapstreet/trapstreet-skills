@@ -13,7 +13,7 @@ step), every submission fails with:
     any published version. Publish the task first.","code":"NOT_FOUND"}
 
 Run this BEFORE `tp run` to catch that ahead of time rather than after
-wasting a real API call.
+wasting a real API call. No `tp auth login` required -- task info is public.
 
 Usage:
     python3 check_provenance.py <task-slug> <path-to-task-repo-checkout>
@@ -24,18 +24,9 @@ Example:
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
-
-
-def load_api_key() -> str:
-    auth_path = Path.home() / ".config" / "trapstreet" / "auth.json"
-    if not auth_path.exists():
-        print(f"error: no auth file at {auth_path} -- run `tp` once to authenticate first", file=sys.stderr)
-        sys.exit(1)
-    return json.loads(auth_path.read_text())["api_key"]
 
 
 def local_head(repo_path: Path) -> tuple[str, bool]:
@@ -51,13 +42,15 @@ def local_head(repo_path: Path) -> tuple[str, bool]:
     return sha, status.strip() == ""
 
 
-def published_commit(task_slug: str, api_key: str) -> str | None:
+def published_commit(task_slug: str) -> str | None:
+    """GET /api/tasks/<slug> is a public, unauthenticated endpoint -- no api_key needed
+    (and no api_key would grant access to a private task either; that's session-gated).
+    This intentionally never requires `tp auth login` to have happened, since checking
+    provenance is exactly the kind of thing you want to do before deciding whether to
+    authenticate or spend anything at all."""
     import urllib.request
 
-    req = urllib.request.Request(
-        f"https://trapstreet.run/api/tasks/{task_slug}",
-        headers={"Authorization": f"Bearer {api_key}"},
-    )
+    req = urllib.request.Request(f"https://trapstreet.run/api/tasks/{task_slug}")
     try:
         with urllib.request.urlopen(req) as resp:
             data = json.load(resp)
@@ -78,9 +71,8 @@ def main() -> int:
         print(f"error: {repo_path} is not a git repo root", file=sys.stderr)
         return 1
 
-    api_key = load_api_key()
     local_sha, is_clean = local_head(repo_path)
-    remote_sha = published_commit(task_slug, api_key)
+    remote_sha = published_commit(task_slug)
 
     print(f"task:            {task_slug}")
     print(f"local repo:      {repo_path}")
