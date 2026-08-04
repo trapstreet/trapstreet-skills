@@ -296,8 +296,9 @@ TODO: one-paragraph description of what this task tests and why.
 ## Why this task
 
 TODO: what real-world capability does this measure? Why does it matter?
-See ../../../references (trapstreet-task-scaffold skill)/ground-truth-sourcing.md
-for the positioning constraints this should satisfy.
+See the trapstreet-task-scaffold skill's references/ground-truth-sourcing.md
+for the positioning constraints this should satisfy (a separate repo from
+this task -- no reliable relative path between the two, reference by name).
 
 ## Input / output contract
 

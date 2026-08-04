@@ -7,7 +7,7 @@ description: Design and scaffold a NEW trapstreet.run task to evaluate a given a
 
 Scaffolds a new task directory in `trapstreet-tasks` and guides the design
 decisions that make a task actually good -- discriminating, hard to game,
-legally sound, and consistent with a real real ground-truth pipeline.
+legally sound, and consistent with a real ground-truth pipeline.
 Sister skill to `trapstreet-solution-scaffold`, which does the reverse
 (build a solution against an existing task).
 
@@ -18,6 +18,16 @@ them for you. Whether the task is actually *good* -- whether it measures
 something real, whether it resists gaming, whether the ground truth is
 sound -- depends on understanding the specific agent/skill/domain being
 tested, and that part is an interview + judgment call, not a template fill.
+
+## Ground rules
+
+- **Never push to the shared task repo, and never register/publish a task on trapstreet.run,
+  without the user's explicit go-ahead on that specific push/publish** -- same weight as
+  `trapstreet-solution-scaffold`'s submit rule. Agreeing to earlier steps (case design, scoring
+  logic) is not consent to publish; ask again at that specific moment.
+- **Default to local-only whenever the legal/IP question (interview step 4) is unresolved.**
+  Build and test the task fully -- nothing about that requires a public remote -- but don't
+  `git push` until the question is actually answered (see `references/legal-ip-checklist.md`).
 
 ## Before writing anything: interview
 
@@ -115,8 +125,9 @@ pass that catches things your own tests might not think to check.
 ## Publishing
 
 Once the task passes its own tests and `validate_task.py`, and the
-legal/IP question from step 4 of the interview is resolved: commit, push
-to the shared task repo, and (if this account can) register/publish the
+legal/IP question from step 4 of the interview is resolved: commit, and
+-- after the user's explicit go-ahead (Ground rules above, no exception) --
+push to the shared task repo and (if this account can) register/publish the
 task on trapstreet.run so solutions can actually submit against it -- see
 `trapstreet-solution-scaffold`'s `check_provenance.py` for how a
 solution verifies a task is actually published before spending an API
