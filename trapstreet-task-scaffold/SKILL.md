@@ -105,6 +105,13 @@ known exploit class from `scoring-design.md` that's relevant to your
 scoring approach (e.g. if using keyword matching, a substring-false-
 positive regression test).
 
+**This near-miss test is also the free way to confirm the task actually discriminates.** Hand-author
+a plausible-but-wrong answer -- the kind a genuine, earnest, but weak attempt would actually
+produce, not a throwaway empty string -- and confirm `score_case()` scores it clearly below the
+gold answer. This is a direct Python function call, no LLM involved, costs nothing, and catches
+most discrimination problems (a judge too lenient to tell weak from strong) before you ever spend
+money running a real solution. Do this before reaching for the optional real-run check below.
+
 ## After building: validate
 
 ```bash
@@ -121,6 +128,21 @@ accidentally leaking into `inputs/` (would hand the solution the answer),
 and `judge.py` crashing instead of degrading gracefully on malformed
 input. It does not replace real unit tests -- it's a second, independent
 pass that catches things your own tests might not think to check.
+
+## Optional: confirm discrimination with a real run
+
+Unit tests verify the judge can tell right from wrong on answers *you* thought to hand-author --
+they can't catch a form of wrong answer you didn't imagine. If you want stronger confidence
+before publishing, run 1-2 real solutions of clearly different quality (e.g. a
+deterministic/naive baseline and a genuinely competent attempt) against a small subset of cases
+and confirm the scores separate meaningfully. This is optional, an extra confidence check, not a
+blocking step -- the free unit-test path above is what to do first, every time.
+
+The moment a paid model is involved this costs real money, so it follows
+`trapstreet-solution-scaffold`'s cost-triage discipline exactly: no paid call before the user's
+OK, prefer a free/deterministic baseline over a second paid one when a real baseline exists, and
+run a handful of cases -- not the full set -- to keep the cost small while still getting a
+directional signal.
 
 ## Publishing
 
