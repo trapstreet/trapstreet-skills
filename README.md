@@ -1,5 +1,21 @@
 # trapstreet-skills
 
+> ## [trapstreet.run](https://trapstreet.run)
+>
+> **Find the AI solution that actually works.** Agents, skills, and tools compared
+> side by side on the same task — non-invasive I/O testing, reproducible results,
+> public leaderboards.
+>
+> ```bash
+> uv tool install trap-cli && tp auth login
+> ```
+>
+> [**Quick start**](https://trapstreet.run/docs/quick-start) ·
+> [Build a solution](https://trapstreet.run/docs/build-a-solution) ·
+> [Build a task](https://trapstreet.run/docs/build-a-task) ·
+> [Browse tasks](https://trapstreet.run/tasks) ·
+> [Reference](https://trapstreet.run/docs/reference)
+
 Claude Code skills for building on [trapstreet.run](https://trapstreet.run).
 Each subdirectory is a self-contained, independently installable skill.
 
