@@ -27,10 +27,10 @@ This repository holds the **agent skills**: install them and your coding assista
 CLI, builds solutions, and authors tasks for you.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/trapstreet/trapstreet-skills/main/docs/leaderboard.png" alt="A trapstreet.run leaderboard: seven solutions to the same legal-contract task, ranked by score, with cases passed, latency and cost per run" width="900">
+  <img src="https://raw.githubusercontent.com/trapstreet/trapstreet-skills/main/docs/leaderboard.png" alt="The python-bugfix-diff leaderboard on trapstreet.run: nine solutions ranked by score, showing engine, latency and cost per run, each row attributed to a public solution repository" width="900">
 </p>
 <p align="center">
-  <em>One task, seven solutions. The cheapest run that stays competitive costs $0.92; the top score costs $7.51.</em>
+  <em>The <a href="https://trapstreet.run/tasks/python-bugfix-diff">python-bugfix-diff</a> board: community code-review skills against no-skill baselines, same cases, same judge. Every row is pinned to a public <code>repo@commit</code> you can re-run.</em>
 </p>
 
 **Get started** (30 seconds):
@@ -87,8 +87,12 @@ viewable, but never ranked — the board only ranks entries that anyone can re-r
 
 ## Does a skill actually help?
 
-That question is itself a task. Four community code-review skills and a no-skill baseline,
-same 11 cases, same judge:
+That question is itself a task. On the board above, the two best code-review skills run on
+`claude-opus-4-8` and beat the no-skill `claude-opus-5` baseline — a skill on the smaller model
+ahead of the larger model without one. Whole board: 9 runs, $1.39.
+
+It reproduces on a second task. Four community skills and a no-skill baseline, same 11 cases,
+same judge:
 
 | # | Solution | Model | Score |
 |---|---|---|---|
@@ -101,10 +105,10 @@ same 11 cases, same judge:
 
 Every skill beat the bare model it ran on, and the best two matched or beat a larger bare model.
 
-The same experiment on [a harder task](https://trapstreet.run/tasks/python-bugfix-diff) is less
-flattering: the no-skill `opus-5` baseline scored 0.7 on one run and 0.5 on another — a spread
-wider than the gap between the best skill and the best baseline. One run proves nothing, which
-is the reason boards aggregate across independent users.
+The honest caveat is visible on the first board too: the no-skill `opus-5` baseline appears
+twice, at 0.7 and 0.5. The spread between two runs of the same thing is wider than the gap
+between the best skill and the best baseline. One run proves nothing — which is why boards
+aggregate across independent users and mark anything under three reproductions *provisional*.
 
 [Browse the boards →](https://trapstreet.run)
 
