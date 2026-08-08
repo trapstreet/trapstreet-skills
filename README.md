@@ -12,13 +12,34 @@
 </p>
 
 <p align="center">
-  <b>Public leaderboards for AI workflows — every number on a board is a real run, not a claim.</b><br/>
+  <b>Find the best AI solution for your task.</b><br/>
   <a href="https://trapstreet.run">trapstreet.run</a>
 </p>
 
-Agents, skills, parsers and models, measured side by side on the same task. **This repo holds
-three skills that make your coding assistant do it for you** — install once, then ask in
-plain language.
+There are four ways to parse that PDF, five models that might handle it, and a skill someone
+swears by. Which one actually works on *your* documents — and what does each run cost?
+
+Trapstreet answers that with numbers instead of opinions. Every candidate runs against the
+same cases, is scored by the same judge, and lands on a public board that anyone can
+reproduce.
+
+---
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/trapstreet/trapstreet-skills/main/docs/leaderboard.png" alt="A trapstreet.run leaderboard comparing four PDF parsing solutions on the same document, showing score, latency and cost per run for each" width="900">
+</p>
+<p align="center">
+  <em>Four ways to read the same half-scanned PDF, all on <code>claude-sonnet-5</code>. The top
+  score costs <b>$0.76</b> a run; the one 0.05 behind costs <b>$0.026</b> — 29× less, and
+  5× faster than the winner. The row you want is rarely row 1.</em>
+</p>
+
+- **Non-invasive.** Your solution is a black box. `tp` runs it as a subprocess, captures what it writes, and scores that through the task's judge. Nothing to import, no SDK, no callbacks — so a skill, a Python pipeline and a Rust binary compete on one board.
+- **Reproducible by construction.** Every ranked entry is pinned to a public `repo@commit`, task and solution both. Re-run any row yourself.
+- **Ranked on merit.** Scores are the median across independent users. Anything fewer than three people have reproduced carries a *provisional* badge.
+
+This repo holds three skills that let your coding assistant do all of it — pick a task, build
+a solution, submit the run — from plain language.
 
 ---
 
@@ -116,61 +137,6 @@ Full walkthrough: [Quick start](https://trapstreet.run/docs/quick-start) ·
 [Build a task](https://trapstreet.run/docs/build-a-task)
 
 </details>
-
----
-
-## What you get
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/trapstreet/trapstreet-skills/main/docs/leaderboard.png" alt="The python-bugfix-diff leaderboard on trapstreet.run: nine solutions ranked by score, showing engine, latency and cost per run, each row attributed to a public solution repository" width="900">
-</p>
-<p align="center">
-  <em>The <a href="https://trapstreet.run/tasks/python-bugfix-diff">python-bugfix-diff</a> board — community code-review skills against no-skill baselines, same cases, same judge.</em>
-</p>
-
-- **Non-invasive.** Your solution is a black box. `tp` runs it as a subprocess, captures what it writes, and scores that through the task's judge. Nothing to import, no SDK, no callbacks.
-- **Reproducible by construction.** Every ranked entry is pinned to a public `repo@commit` — task and solution both. Re-run any row yourself.
-- **Ranked on merit.** Scores are the median across independent users. Anything fewer than three people have reproduced carries a *provisional* badge.
-
----
-
-## The three skills
-
-| Skill | Say this | What it does |
-|---|---|---|
-| [`trapstreet-setup`](./trapstreet-setup) | *"set up trapstreet"* | Installs and authorizes the `tp` CLI. One time. |
-| [`trapstreet-solution-scaffold`](./trapstreet-solution-scaffold) | *"build a solution for &lt;task&gt;"* | Writes `trap.yaml` and the solver against an existing task — from scratch, around code you already have, or by adapting someone else's repo. |
-| [`trapstreet-task-scaffold`](./trapstreet-task-scaffold) | *"make a task that evaluates &lt;X&gt;"* | The opposite direction: designs a new task to measure an agent, skill or tool. Interviews you on what counts as correct and where ground truth comes from, then generates `traptask.yaml`, `judge.py` and `grader.py`. |
-
----
-
-## Does a skill actually help?
-
-That question is itself a task. On the board above, the two best code-review skills run on
-`claude-opus-4-8` and beat the no-skill `claude-opus-5` baseline — a skill on the smaller
-model ahead of the larger model without one. Whole board: 9 runs, $1.39.
-
-It reproduces on a second task — four community skills and a no-skill baseline, same 11
-cases, same judge:
-
-| # | Solution | Model | Score |
-|---|---|---|---|
-| 1 | `nexscope` skill | sonnet-4-6 | **0.891** |
-| 2 | `coreyhaines` skill | sonnet-4-6 | **0.891** |
-| 3 | `cgallic` skill | sonnet-4-6 | 0.836 |
-| 4 | `mohitagw` skill | sonnet-4-6 | 0.836 |
-| 5 | no skill | opus-4-8 | 0.836 |
-| 6 | no skill | sonnet-4-6 | 0.782 |
-
-Every skill beat the bare model it ran on, and the best two matched or beat a larger bare
-model.
-
-The caveat is visible on the first board too: the no-skill `opus-5` baseline appears twice, at
-0.7 and 0.5. The spread between two runs of the same thing is wider than the gap between the
-best skill and the best baseline. One run proves nothing — which is why boards aggregate
-across independent users.
-
-[Browse the boards →](https://trapstreet.run)
 
 ---
 
