@@ -1,0 +1,55 @@
+name: validate skills
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  spec:
+    name: spec compliance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+
+      # The official reference validator: checks frontmatter parses, name and
+      # description are present and within their limits, and name matches the
+      # directory. https://agentskills.io/specification
+      - name: skills-ref validate
+        run: |
+          fail=0
+          for d in trapstreet-*/; do
+            echo "── ${d%/}"
+            uvx --from "git+https://github.com/agentskills/agentskills@main#subdirectory=skills-ref" \
+              skills-ref validate "./$d" || fail=1
+          done
+          exit $fail
+
+  discover:
+    name: installable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+
+      # Spec compliance is not enough: a skill can be well-formed and still be
+      # skipped by the installer. Install this checkout for real and assert all
+      # three arrive — this is the check that would have caught the YAML colon
+      # that silently dropped trapstreet-solution-scaffold everywhere except
+      # Claude Code.
+      - name: npx skills add finds every skill
+        run: |
+          npx -y skills@latest add "$GITHUB_REPOSITORY" --global --yes
+          npx -y skills@latest list --global --json > installed.json
+          node -e '
+            const want = ["trapstreet-setup","trapstreet-solution-scaffold","trapstreet-task-scaffold"];
+            const raw  = JSON.parse(require("fs").readFileSync("installed.json","utf8"));
+            const list = Array.isArray(raw) ? raw : (raw.skills ?? []);
+            const got  = new Set(list.map(s => s.name));
+            const miss = want.filter(n => !got.has(n));
+            if (miss.length) { console.error("not installed:", miss.join(", ")); process.exit(1); }
+            console.log("all", want.length, "skills installed");
+          '

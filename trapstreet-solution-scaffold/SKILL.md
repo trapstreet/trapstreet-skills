@@ -3,16 +3,15 @@ name: trapstreet-solution-scaffold
 description: >-
   Scaffold a submission-ready trap-cli solution for a trapstreet.run task -- generates trap.yaml
   (and, optionally, solution.py) with the correct current schema, sets up credentials, and gets
-  the repo into leaderboard-eligible shape. Covers three starting points: writing a brand-new
-  solution from scratch, wrapping an already-written solution.py, and adapting someone else's
-  existing project/repo (found on GitHub or elsewhere) into a trapstreet-testable solution. Use
-  whenever the user wants to build a new solution for a trapstreet task, wrap an existing script
-  so it can be evaluated, port a project they found elsewhere into this task-eval format, add
-  another model/provider to compare against an existing task, or is troubleshooting why a solution
-  won't submit or isn't showing up on the leaderboard -- even if they don't say "trap.yaml" or
-  "trap-cli" by name, e.g. "I want to test claude opus against this task", "make a solution for
-  X", "I found this agent repo, can we test it against our task", "why isn't my run showing up",
-  "add gpt-5 as another comparison point".
+  the repo into leaderboard-eligible shape. Covers writing one from scratch, wrapping an existing
+  solution.py, and adapting someone else's existing repo. Use whenever the user wants to build a
+  new solution for a trapstreet task, wrap an existing script so it can be evaluated, port a
+  project they found elsewhere into this task-eval format, add another model/provider to compare
+  against an existing task, or is troubleshooting why a solution won't submit or isn't showing up
+  on the leaderboard -- even if they don't say "trap.yaml" or "trap-cli" by name, e.g. "I want to
+  test claude opus against this task", "make a solution for X", "I found this agent repo, can we
+  test it against our task", "why isn't my run showing up", "add gpt-5 as another comparison
+  point".
 ---
 
 # trapstreet-solution-scaffold
