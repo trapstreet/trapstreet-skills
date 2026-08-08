@@ -174,6 +174,45 @@ across independent users.
 
 ---
 
+## Measure your own thing
+
+The board above is one we made. The interesting one is the one you haven't — you have a
+skill, an agent, a parser or a prompt, and no evidence it beats the alternative.
+
+A task is three things:
+
+| | |
+|---|---|
+| `inputs/<case>/` | what the solution sees |
+| `expected/<case>/` | the answer it never sees |
+| `judge.py` | scores one against the other, returns `0.0`–`1.0` |
+
+That is the whole contract. Your solution runs as a subprocess, so anything that reads files
+and writes an answer can be measured — a Claude Code skill, a Python pipeline, a shell script,
+a Rust binary. No SDK, no instrumentation.
+
+Say this:
+
+```
+make a task that evaluates <the thing you want measured>
+```
+
+`trapstreet-task-scaffold` interviews you on what counts as correct, where ground truth comes
+from, and how to keep the scoring ungameable — then writes `traptask.yaml`, `judge.py` and
+`grader.py`. Publish it from your own public repo and register it at
+[trapstreet.run](https://trapstreet.run) → **+ New Task**. Tasks live in their author's
+repository, not ours.
+
+[`mineral-species-id`](https://trapstreet.run/tasks/mineral-species-id) and
+[`karpathys-jagged-questions`](https://trapstreet.run/tasks/karpathys-jagged-questions) are
+community tasks built exactly that way, by people who are not us.
+
+Want to read finished ones first?
+[**trapstreet-tasks**](https://github.com/trapstreet/trapstreet-tasks) has 36 worked examples
+with judges and gold cases.
+
+---
+
 ## Beyond the skills
 
 | | |
@@ -181,65 +220,21 @@ across independent users.
 | [**trapstreet.run**](https://trapstreet.run) | The boards. Browse tasks, read results, register your own task. |
 | [**Documentation**](https://trapstreet.run/docs/quick-start) | [Quick start](https://trapstreet.run/docs/quick-start) · [Build a solution](https://trapstreet.run/docs/build-a-solution) · [Build a task](https://trapstreet.run/docs/build-a-task) · [Reference](https://trapstreet.run/docs/reference) |
 | [**trapstreet/trap**](https://github.com/trapstreet/trap) | The `tp` CLI, for driving it directly instead of through an agent. MIT. |
-| [**trapstreet/trapstreet-tasks**](https://github.com/trapstreet/trapstreet-tasks) | 36 reference tasks with judges and gold cases. Read one before writing your own. MIT. |
-
-Tasks live in their author's own repository, not ours — publish from anywhere public and
-register it on the site. [`mineral-species-id`](https://trapstreet.run/tasks/mineral-species-id)
-and [`karpathys-jagged-questions`](https://trapstreet.run/tasks/karpathys-jagged-questions) are
-community tasks that work exactly that way.
+| [**trapstreet/trapstreet-tasks**](https://github.com/trapstreet/trapstreet-tasks) | 36 reference tasks with judges and gold cases. MIT. |
 
 ---
 
 ## Other platforms
 
-**`npx skills add` already handles this.** It writes one canonical copy to
-`~/.agents/skills/` — which Codex, Cursor, Cline, Amp, Antigravity and a dozen more read
-directly — and symlinks it into Claude Code's own directory. You do not need to translate
-anything.
+`npx skills add` writes one copy to `~/.agents/skills/`, which Codex, Cursor, Cline, Amp,
+Antigravity and a dozen more read directly, and symlinks it into Claude Code. Nothing to
+translate.
 
-The notes below are for the curl route, or a tool that reads neither. Each skill is one
-`SKILL.md` — YAML frontmatter with `name` and `description`, then the body — plus supporting
-`references/` and `scripts/`. The content has no Claude Code-specific dependencies; it is
-plain markdown and shell commands.
-
-<details>
-<summary><b>Cursor</b></summary>
-
-Cursor Rules have a similar shape but different frontmatter. Copy the `SKILL.md` body into
-`.cursor/rules/<name>.mdc` and translate the frontmatter:
-
-```yaml
----
-description: <the SKILL.md description, verbatim>
-alwaysApply: false
----
-```
-
-`alwaysApply: false` plus a description is what makes Cursor pull the rule in contextually — the
-closest match to how Claude Code triggers a skill. Copy any `references/` files it points at
-alongside it and fix the relative paths.
-
-</details>
-
-<details>
-<summary><b>Codex, or anything <code>AGENTS.md</code>-based</b></summary>
-
-These have no multi-file, auto-triggered skill system. Fold the content into your project's
-`AGENTS.md` — the whole `SKILL.md` body, or only the sections relevant to what you are doing. If
-your tool supports per-session file references instead, pointing it at the `SKILL.md` path at
-session start works too.
-
-</details>
-
-<details>
-<summary><b>Anything else</b></summary>
-
-No skill or rule system at all: paste the `SKILL.md` body into your tool's system prompt or
-custom-instructions field, or tell the agent to read the file before starting.
-
-</details>
-
-Each skill's own README covers what it does and how it is put together.
+For a tool that reads neither — paste the `SKILL.md` body into its system prompt or
+custom-instructions field, or point it at the file at session start. Each skill is one
+`SKILL.md` (YAML frontmatter with `name` and `description`, then the body) plus optional
+`references/` and `scripts/`; it is plain markdown and shell commands, with no Claude
+Code-specific dependencies.
 
 ---
 
