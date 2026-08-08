@@ -27,14 +27,46 @@ plain language.
 ### 1. Install the skills
 
 ```bash
-git clone --depth 1 -q https://github.com/trapstreet/trapstreet-skills.git /tmp/ts-skills \
-  && mkdir -p ~/.claude/skills \
-  && cp -r /tmp/ts-skills/trapstreet-* ~/.claude/skills/ \
-  && rm -rf /tmp/ts-skills
+npx skills add trapstreet/trapstreet-skills
 ```
 
-Start a new session — skills load at session start. Not on Claude Code?
-[Other platforms](#other-platforms).
+Installs into every coding agent it detects — Claude Code, Cursor, Codex, Cline, Amp,
+Antigravity and 70+ more — and keeps them updatable with `npx skills update`. Start a new
+session afterwards; skills load at session start.
+
+<details>
+<summary><b>Give this to your agent instead</b> — paste it in and it does the whole setup</summary>
+
+```
+Set up Trapstreet for me:
+
+1. Run: npx -y skills add trapstreet/trapstreet-skills --global --yes
+2. Verify: npx -y skills list --global --json
+   All three must be present: trapstreet-setup, trapstreet-solution-scaffold,
+   trapstreet-task-scaffold.
+3. Skills only auto-load at session start, so for this session read
+   ~/.agents/skills/trapstreet-setup/SKILL.md and follow it now — it installs
+   uv and the tp CLI and authorizes this machine.
+4. Report back: the output of `tp --help | head -3` and `tp auth status`.
+```
+
+</details>
+
+<details>
+<summary><b>No Node?</b> Install with curl instead</summary>
+
+```bash
+D=~/.claude/skills; T=$(mktemp -d); mkdir -p "$D" \
+  && curl -fsSL https://github.com/trapstreet/trapstreet-skills/archive/refs/heads/main.tar.gz \
+   | tar -xz -C "$T" --strip-components=1 \
+  && cp -R "$T"/trapstreet-* "$D"/ && rm -rf "$T"
+```
+
+This writes to Claude Code's directory only — change `D` for another agent — and skills
+installed this way don't participate in `npx skills update`. Prefer the npx route when you
+have it. Not on Claude Code at all? [Other platforms](#other-platforms).
+
+</details>
 
 ### 2. Set up the CLI — say this
 
@@ -172,9 +204,15 @@ community tasks that work exactly that way.
 
 ## Other platforms
 
-Each skill is one `SKILL.md` — YAML frontmatter with `name` and `description`, then the body —
-plus supporting `references/` and `scripts/`. The content has no Claude Code-specific
-dependencies; it is plain markdown and shell commands.
+**`npx skills add` already handles this.** It writes one canonical copy to
+`~/.agents/skills/` — which Codex, Cursor, Cline, Amp, Antigravity and a dozen more read
+directly — and symlinks it into Claude Code's own directory. You do not need to translate
+anything.
+
+The notes below are for the curl route, or a tool that reads neither. Each skill is one
+`SKILL.md` — YAML frontmatter with `name` and `description`, then the body — plus supporting
+`references/` and `scripts/`. The content has no Claude Code-specific dependencies; it is
+plain markdown and shell commands.
 
 <details>
 <summary><b>Cursor</b></summary>
