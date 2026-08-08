@@ -26,12 +26,10 @@ reproduce.
 ---
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/trapstreet/trapstreet-skills/main/docs/leaderboard.png" alt="A trapstreet.run leaderboard comparing four PDF parsing solutions on the same document, showing score, latency and cost per run for each" width="900">
+  <img src="https://raw.githubusercontent.com/trapstreet/trapstreet-skills/main/docs/leaderboard.png" alt="A trapstreet.run leaderboard comparing four PDF parsers on the same document and model, with score, latency and cost for each run" width="900">
 </p>
 <p align="center">
-  <em>Four ways to read the same half-scanned PDF, all on <code>claude-sonnet-5</code>. The top
-  score costs <b>$0.76</b> a run; the one 0.05 behind costs <b>$0.026</b> — 29× less, and
-  5× faster than the winner. The row you want is rarely row 1.</em>
+  <em>Four parsers, same PDF, same model. The pick is row 3 — 0.05 behind, 29× cheaper.</em>
 </p>
 
 - **Non-invasive.** Your solution is a black box. `tp` runs it as a subprocess, captures what it writes, and scores that through the task's judge. Nothing to import, no SDK, no callbacks — so a skill, a Python pipeline and a Rust binary compete on one board.
