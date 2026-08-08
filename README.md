@@ -8,32 +8,23 @@
   <a href="https://pypi.org/project/trap-cli/"><img src="https://img.shields.io/pypi/v/trap-cli?label=trap-cli" alt="PyPI"/></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"/></a>
   <a href="https://discord.gg/Ymm57FzYmF"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat&logo=discord&logoColor=white" alt="Discord"/></a>
-  <a href="https://trapstreet.run"><img src="https://img.shields.io/badge/trapstreet.run-live-F25C1F" alt="trapstreet.run"/></a>
+  <a href="https://trapstreet.run"><img src="https://img.shields.io/badge/trapstreet.run-live-60a5fa" alt="trapstreet.run"/></a>
 </p>
 
 <p align="center">
-  <b>Public leaderboards for AI workflows — every number on a board is a real run, not a claim: <a href="https://trapstreet.run">trapstreet.run</a></b>
+  <b>Public leaderboards for AI workflows — every number on a board is a real run, not a claim.</b><br/>
+  <a href="https://trapstreet.run">trapstreet.run</a>
 </p>
 
-Agents, skills, parsers and models, compared side by side on the same task. A task declares
-only its **inputs** and **expected outputs**, so any solution can be measured without hooks or
-instrumentation — then the score lands on a public board that anyone can reproduce.
+Agents, skills, parsers and models, measured side by side on the same task. **This repo holds
+three skills that make your coding assistant do it for you** — install once, then ask in
+plain language.
 
-- **Non-invasive.** Your solution is a black box. `tp` runs it as a subprocess, captures what it writes, and scores that through the task's judge. Nothing to import, no SDK, no callbacks.
-- **Reproducible by construction.** Every ranked entry is pinned to a public `repo@commit` — task and solution both. Re-run any row yourself.
-- **Ranked on merit.** Scores are the median across independent users. Anything fewer than three people have reproduced carries a *provisional* badge.
+---
 
-This repository holds the **agent skills**: install them and your coding assistant sets up the
-CLI, builds solutions, and authors tasks for you.
+## Quick start
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/trapstreet/trapstreet-skills/main/docs/leaderboard.png" alt="The python-bugfix-diff leaderboard on trapstreet.run: nine solutions ranked by score, showing engine, latency and cost per run, each row attributed to a public solution repository" width="900">
-</p>
-<p align="center">
-  <em>The <a href="https://trapstreet.run/tasks/python-bugfix-diff">python-bugfix-diff</a> board: community code-review skills against no-skill baselines, same cases, same judge. Every row is pinned to a public <code>repo@commit</code> you can re-run.</em>
-</p>
-
-**Get started** (30 seconds):
+### 1. Install the skills
 
 ```bash
 git clone --depth 1 -q https://github.com/trapstreet/trapstreet-skills.git /tmp/ts-skills \
@@ -42,57 +33,105 @@ git clone --depth 1 -q https://github.com/trapstreet/trapstreet-skills.git /tmp/
   && rm -rf /tmp/ts-skills
 ```
 
-Then, in your AI assistant:
+Start a new session — skills load at session start. Not on Claude Code?
+[Other platforms](#other-platforms).
+
+### 2. Set up the CLI — say this
 
 ```
 set up trapstreet
 ```
 
 `trapstreet-setup` installs `uv` and the `tp` CLI, runs `tp auth login`, and verifies the
-pairing. You don't type a command.
+pairing. You don't type a command. (Authorization is only needed to *submit* — scoring
+locally needs no account.)
 
-**Works in** Claude Code natively; Cursor, Codex and any tool with a custom-instructions field
-via a copy — [pick your platform](#other-platforms).
-
----
-
-## The skills
-
-| Skill | Say this | What it does |
-|---|---|---|
-| [`trapstreet-setup`](./trapstreet-setup) | *"set up trapstreet"* | Installs and authorizes the `tp` CLI. One time. Local scoring needs no account — authorization is only required to submit. |
-| [`trapstreet-solution-scaffold`](./trapstreet-solution-scaffold) | *"build a solution for &lt;task&gt;"* | Writes `trap.yaml` (and `solution.py`) against an existing task — from scratch, around code you already have, or by adapting someone else's repo. |
-| [`trapstreet-task-scaffold`](./trapstreet-task-scaffold) | *"make a task that evaluates &lt;X&gt;"* | The opposite direction: designs a new task to evaluate an agent, skill or tool. Interviews you on what counts as correct and where ground truth comes from, then generates `traptask.yaml`, `judge.py` and `grader.py`. |
-
----
-
-## A first run
+### 3. Build a solution — say this
 
 ```
-set up trapstreet
 build a solution for pdf-mixed-scan using claude-sonnet-5
 ```
 
-The scaffold writes the solution, runs it locally and reports the score per case. Nothing is
-published yet. When the result looks right:
+Pick any task from [the boards](https://trapstreet.run). `trapstreet-solution-scaffold`
+writes `trap.yaml` and the solver, then runs it locally and prints the score per case:
+
+```
+╭────────────────── Summary ───────────────────╮
+│  cases  2 cases                              │
+│ grader  {"score": 1.0, "n_passed": 2, "n": 2}│
+╰──────────────────────────────────────────────╯
+╭─────────┬──────┬────────┬─────────┬──────┬──────────╮
+│ case    │ exit │   time │ # score │ #got │#expected │
+├─────────┼──────┼────────┼─────────┼──────┼──────────┤
+│ case_01 │    0 │ 0.056s │    100% │    5 │        5 │
+│ case_02 │    0 │ 0.029s │    100% │   42 │       42 │
+╰─────────┴──────┴────────┴─────────┴──────┴──────────╯
+run 2026-08-08T21:33:41 → .trap/runs/…/report.json
+```
+
+Nothing has been published yet. Iterate until the score looks right.
+
+### 4. Submit — say this
 
 ```
 submit it
 ```
 
-Runs are always accepted; ranking has a bar. A run with no public solution repo is stored and
-viewable, but never ranked — the board only ranks entries that anyone can re-run.
+Your row appears on that task's board with everyone else's. The CLI prints a link to it.
+
+> **Runs are always accepted; ranking has a bar.** A run with no public solution repo is
+> stored and viewable but never ranked — boards only rank entries anyone can re-run.
+
+<details>
+<summary><b>Prefer to drive the CLI yourself?</b> Three commands, no skills needed.</summary>
+
+```bash
+uv tool install trap-cli   # 1. install
+tp auth login              # 2. authorize this machine (once)
+tp run && tp submit        # 3. from any directory with a trap.yaml
+```
+
+Full walkthrough: [Quick start](https://trapstreet.run/docs/quick-start) ·
+[Build a solution](https://trapstreet.run/docs/build-a-solution) ·
+[Build a task](https://trapstreet.run/docs/build-a-task)
+
+</details>
+
+---
+
+## What you get
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/trapstreet/trapstreet-skills/main/docs/leaderboard.png" alt="The python-bugfix-diff leaderboard on trapstreet.run: nine solutions ranked by score, showing engine, latency and cost per run, each row attributed to a public solution repository" width="900">
+</p>
+<p align="center">
+  <em>The <a href="https://trapstreet.run/tasks/python-bugfix-diff">python-bugfix-diff</a> board — community code-review skills against no-skill baselines, same cases, same judge.</em>
+</p>
+
+- **Non-invasive.** Your solution is a black box. `tp` runs it as a subprocess, captures what it writes, and scores that through the task's judge. Nothing to import, no SDK, no callbacks.
+- **Reproducible by construction.** Every ranked entry is pinned to a public `repo@commit` — task and solution both. Re-run any row yourself.
+- **Ranked on merit.** Scores are the median across independent users. Anything fewer than three people have reproduced carries a *provisional* badge.
+
+---
+
+## The three skills
+
+| Skill | Say this | What it does |
+|---|---|---|
+| [`trapstreet-setup`](./trapstreet-setup) | *"set up trapstreet"* | Installs and authorizes the `tp` CLI. One time. |
+| [`trapstreet-solution-scaffold`](./trapstreet-solution-scaffold) | *"build a solution for &lt;task&gt;"* | Writes `trap.yaml` and the solver against an existing task — from scratch, around code you already have, or by adapting someone else's repo. |
+| [`trapstreet-task-scaffold`](./trapstreet-task-scaffold) | *"make a task that evaluates &lt;X&gt;"* | The opposite direction: designs a new task to measure an agent, skill or tool. Interviews you on what counts as correct and where ground truth comes from, then generates `traptask.yaml`, `judge.py` and `grader.py`. |
 
 ---
 
 ## Does a skill actually help?
 
 That question is itself a task. On the board above, the two best code-review skills run on
-`claude-opus-4-8` and beat the no-skill `claude-opus-5` baseline — a skill on the smaller model
-ahead of the larger model without one. Whole board: 9 runs, $1.39.
+`claude-opus-4-8` and beat the no-skill `claude-opus-5` baseline — a skill on the smaller
+model ahead of the larger model without one. Whole board: 9 runs, $1.39.
 
-It reproduces on a second task. Four community skills and a no-skill baseline, same 11 cases,
-same judge:
+It reproduces on a second task — four community skills and a no-skill baseline, same 11
+cases, same judge:
 
 | # | Solution | Model | Score |
 |---|---|---|---|
@@ -103,12 +142,13 @@ same judge:
 | 5 | no skill | opus-4-8 | 0.836 |
 | 6 | no skill | sonnet-4-6 | 0.782 |
 
-Every skill beat the bare model it ran on, and the best two matched or beat a larger bare model.
+Every skill beat the bare model it ran on, and the best two matched or beat a larger bare
+model.
 
-The honest caveat is visible on the first board too: the no-skill `opus-5` baseline appears
-twice, at 0.7 and 0.5. The spread between two runs of the same thing is wider than the gap
-between the best skill and the best baseline. One run proves nothing — which is why boards
-aggregate across independent users and mark anything under three reproductions *provisional*.
+The caveat is visible on the first board too: the no-skill `opus-5` baseline appears twice, at
+0.7 and 0.5. The spread between two runs of the same thing is wider than the gap between the
+best skill and the best baseline. One run proves nothing — which is why boards aggregate
+across independent users.
 
 [Browse the boards →](https://trapstreet.run)
 
