@@ -16,17 +16,16 @@
   <a href="https://trapstreet.run">trapstreet.run</a>
 </p>
 
-There are four ways to parse that PDF, five models that might handle it, and a skill someone
-swears by. Which one actually works on *your* documents — and what does each run cost?
-[trapstreet.run](https://trapstreet.run) answers that with numbers: every candidate runs
-against the same cases, scored by the same judge, on a public board anyone can reproduce.
+Whatever the job — reading documents, debugging a pipeline, reviewing code, answering domain
+questions — there is more than one way to do it. A different model, a different tool, a
+different agent framework, a skill someone swears by. Picking between them is usually guesswork.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/trapstreet/trapstreet-skills/main/docs/leaderboard.png" alt="A trapstreet.run leaderboard comparing four PDF parsers on the same document and model, with score, latency and cost for each run" width="900">
-</p>
-<p align="center">
-  <em>Four parsers, same PDF, same model. The pick is row 3 — 0.05 behind, 29× cheaper.</em>
-</p>
+[**trapstreet.run**](https://trapstreet.run) makes it a measurement. A task declares its inputs
+and the answers it expects; any solution runs against the same cases, is scored by the same
+judge, and lands on a public board with its score, latency and cost. Every row is pinned to a
+public `repo@commit`, so anyone can re-run it and get the same number.
+
+Bring your own task, or run against one that is already there.
 
 **This repo holds three skills that do it for you.** Install them and your coding assistant
 sets up the CLI, builds solutions, and authors tasks — from plain language.
@@ -84,6 +83,15 @@ tp run && tp submit        # from any directory with a trap.yaml
 ```
 
 </details>
+
+## What a board looks like
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/trapstreet/trapstreet-skills/main/docs/leaderboard.png" alt="A trapstreet.run leaderboard comparing four PDF parsers on the same document and model, with score, latency and cost for each run" width="900">
+</p>
+<p align="center">
+  <em>Four parsers, same PDF, same model. The pick is row 3 — 0.05 behind, 29× cheaper.</em>
+</p>
 
 ## Links
 
