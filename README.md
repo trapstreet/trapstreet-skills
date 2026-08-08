@@ -143,7 +143,15 @@ Full walkthrough: [Quick start](https://trapstreet.run/docs/quick-start) ·
 The board above is one we made. The interesting one is the one you haven't — you have a
 skill, an agent, a parser or a prompt, and no evidence it beats the alternative.
 
-A task is three things:
+Say this:
+
+```
+make a task that evaluates <the thing you want measured>
+```
+
+`trapstreet-task-scaffold` takes it from there. It interviews you on the parts that need
+judgment — what counts as correct, where ground truth comes from, how to keep the scoring
+ungameable — and writes the rest:
 
 | | |
 |---|---|
@@ -152,28 +160,18 @@ A task is three things:
 | `judge.py` | scores one against the other, returns `0.0`–`1.0` |
 
 That is the whole contract. Your solution runs as a subprocess, so anything that reads files
-and writes an answer can be measured — a Claude Code skill, a Python pipeline, a shell script,
-a Rust binary. No SDK, no instrumentation.
+and writes an answer can compete — a Claude Code skill, a Python pipeline, a shell script, a
+Rust binary. No SDK, no instrumentation.
 
-Say this:
-
-```
-make a task that evaluates <the thing you want measured>
-```
-
-`trapstreet-task-scaffold` interviews you on what counts as correct, where ground truth comes
-from, and how to keep the scoring ungameable — then writes `traptask.yaml`, `judge.py` and
-`grader.py`. Publish it from your own public repo and register it at
+Then publish from your own public repo and register it at
 [trapstreet.run](https://trapstreet.run) → **+ New Task**. Tasks live in their author's
-repository, not ours.
+repository, not ours: [`mineral-species-id`](https://trapstreet.run/tasks/mineral-species-id)
+and [`karpathys-jagged-questions`](https://trapstreet.run/tasks/karpathys-jagged-questions)
+were built exactly this way, by people who are not us.
 
-[`mineral-species-id`](https://trapstreet.run/tasks/mineral-species-id) and
-[`karpathys-jagged-questions`](https://trapstreet.run/tasks/karpathys-jagged-questions) are
-community tasks built exactly that way, by people who are not us.
-
-Want to read finished ones first?
-[**trapstreet-tasks**](https://github.com/trapstreet/trapstreet-tasks) has 36 worked examples
-with judges and gold cases.
+Reading a finished one first helps —
+[**trapstreet-tasks**](https://github.com/trapstreet/trapstreet-tasks) has 36, with judges and
+gold cases.
 
 ---
 
