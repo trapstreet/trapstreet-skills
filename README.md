@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://trapstreet.run"><img src="https://raw.githubusercontent.com/trapstreet/trapstreet-skills/main/docs/logo.png" width="96" alt="Trapstreet"/></a>
+  <a href="https://trapstreet.run"><img src="https://raw.githubusercontent.com/trapstreet/trapstreet-skills/main/docs/logo.png" width="92" alt="Trapstreet"/></a>
 </p>
 
 <h1 align="center">Trapstreet</h1>
