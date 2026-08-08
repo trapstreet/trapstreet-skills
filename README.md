@@ -34,23 +34,11 @@ Installs into every coding agent it detects — Claude Code, Cursor, Codex, Clin
 Antigravity and 70+ more — and keeps them updatable with `npx skills update`. Start a new
 session afterwards; skills load at session start.
 
-<details>
-<summary><b>Give this to your agent instead</b> — paste it in and it does the whole setup</summary>
+Or paste this to your coding agent and it does the whole thing:
 
 ```
-Set up Trapstreet for me:
-
-1. Run: npx -y skills add trapstreet/trapstreet-skills --global --yes
-2. Verify: npx -y skills list --global --json
-   All three must be present: trapstreet-setup, trapstreet-solution-scaffold,
-   trapstreet-task-scaffold.
-3. Skills only auto-load at session start, so for this session read
-   ~/.agents/skills/trapstreet-setup/SKILL.md and follow it now — it installs
-   uv and the tp CLI and authorizes this machine.
-4. Report back: the output of `tp --help | head -3` and `tp auth status`.
+Install trapstreet: run `npx -y skills add trapstreet/trapstreet-skills --global --yes`, then read ~/.agents/skills/trapstreet-setup/SKILL.md and follow it.
 ```
-
-</details>
 
 <details>
 <summary><b>No Node?</b> Install with curl instead</summary>
