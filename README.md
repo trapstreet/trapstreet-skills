@@ -9,6 +9,7 @@
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"/></a>
   <a href="https://discord.gg/Ymm57FzYmF"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat&logo=discord&logoColor=white" alt="Discord"/></a>
   <a href="https://trapstreet.run"><img src="https://img.shields.io/badge/trapstreet.run-live-60a5fa" alt="trapstreet.run"/></a>
+  <a href="./CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-22c55e" alt="PRs welcome"/></a>
 </p>
 
 <p align="center">
@@ -112,6 +113,11 @@ For anything that reads neither: each skill is one `SKILL.md` (YAML frontmatter 
 and `description`, then the body) plus optional `references/` and `scripts/` — plain markdown
 and shell commands. Paste the body into your tool's custom-instructions field, or point it at
 the file at session start.
+
+## Contributing
+
+Fixes and platform coverage welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md). Publishing a
+task or a solution needs no PR here: those live in your own repository.
 
 ## License
 
