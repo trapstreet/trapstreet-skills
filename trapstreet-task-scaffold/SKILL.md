@@ -49,16 +49,15 @@ finished task discriminates; the rest is craft around them.
    right, that's a sign the scoring needs either a very carefully curated
    rubric or a different, more objective framing of the task.
 3. **What is supposed to make this hard, and is that thing real?** Answer
-   it in the two quantities that actually predict the score: **H\***, the
-   minimum number of effective actions the task requires, and **s**, the
-   layers of nested sub-goals and conditional branches. Performance falls
-   off non-linearly in s with a sharp knee, while the intuitive answers
-   (harder arithmetic, defects a human would be slow to spot, capability
-   gates a shell can synthesise) sit on the flat part and moved a bare
-   harness not at all -- restructuring the same questions to a deeper s
-   took it from 9/10 to 1/10. Read `references/difficulty-design.md`
-   before answering; it is the difference between a task that
-   discriminates and one everyone passes.
+   in the two quantities that predict the score: **H\***, the minimum
+   number of effective actions the task requires, and **s**, the layers of
+   nested sub-goals and conditional branches. Performance falls off
+   non-linearly in s with a sharp knee; the intuitive answers (harder
+   arithmetic, defects a human would be slow to spot, capability gates a
+   shell can synthesise) sit on the flat part and moved a bare harness not
+   at all. Read `references/difficulty-design.md` before answering -- it
+   is the difference between a task that discriminates and one everyone
+   passes.
 4. **Where does ground truth come from?** Computed from a seed (no answer
    for anyone to get wrong, and leakage is impossible by construction),
    real historical data (leakage risk, but credible), or hand-authored
@@ -173,10 +172,8 @@ using keyword matching, a substring-false-positive regression test).
 2. **The ablation replay tells you each planted mechanism discriminates.** For every trap, decoy
    or gap in the task, regenerate the answer *with that mistake made* and compare against the
    truth. If the answer barely moves, the mechanism is decoration -- the task can't detect that
-   mistake, it only rewards not making it. Compare **item by item, never by total**: written
-   against totals first, these checks reported "no effect" for mechanisms that in fact changed a
-   third of the allocation, because the domain's conservation identity hid them. See
-   `references/calibration.md`.
+   mistake, it only rewards not making it. Compare **item by item, never by total**; your
+   domain's conservation identity will hide errors from a total (`references/calibration.md`).
 
 ## After building: validate
 
@@ -204,19 +201,16 @@ small subset of cases is how you find those. The free checks above come first, e
 is what you do once they pass.
 
 **The discipline that matters here is not "run it" -- it's "don't conclude from one run."** Eight
-rounds of design changes on a real task produced 8, 8, 10, 9, 8, 9, 10 out of 10, and every round
-a conclusion was written about the change that had just been made. Re-running the same build
-unchanged produced the same spread: per-question success was ~2/3, which makes 7 through 10 all
-ordinary. Every one of those conclusions was reading noise. So:
+rounds of design changes on a real task each produced a conclusion, and a repeat run showed all
+eight had been reading the same ±1 spread. `references/calibration.md` has the numbers. So:
 
 - Run the same build **at least 3 times** before any score changes your mind about anything.
 - Report **per-question success rates**, not a total -- a total hides four questions at 100% and
   one at 0%.
 - If a decision hinges on ±1 question, you need more trials, not more design.
-- **Read the transcript before recording a failure.** In one day, six apparent solution failures
-  were authoring bugs -- a date of `2026-02-30`, a period end the material contradicted, a judge
-  that read the last line. A failing case is evidence about the task at least as often as about
-  the solution (`references/calibration.md` has the full table).
+- **Read the transcript before recording a failure.** Six apparent solution failures in one day
+  were authoring bugs. A failing case is evidence about the task at least as often as about the
+  solution.
 
 The moment a paid model is involved this costs real money, so it follows
 `trapstreet-solution-scaffold`'s cost-triage discipline exactly: no paid call before the user's
@@ -226,29 +220,20 @@ over 10 cases, because the first produces a number you can act on and the second
 
 ## Publishing
 
-**Check the clock before you check anything else.** Latency is part of the
-result and it is also a hard gate on whether a task works as a public
-board: one otherwise-good build averaged 27 minutes per case, which made it
-unpublishable regardless of how good the questions were. Look at the mean
-*and* the tail -- a 10-40x spread between easy and hard cases (9-24s vs.
-137-3871s on one build) separates solutions even where accuracy doesn't, so
-it's signal worth keeping, but a slow tail plus a slow mean is a rebuild.
+**Check the clock before you check anything else.** Latency gates whether a
+task works as a public board at all -- one otherwise-good build averaged 27
+minutes per case and was unpublishable regardless of question quality. Look
+at the mean *and* the tail; a wide spread is signal worth keeping, a slow
+mean is a rebuild.
 
 **If cases run anywhere near 600s, the README has to say so.** That's the
-default per-case ceiling in the *solution's* `trap.yaml`, and no field in
-`traptask.yaml` can raise it -- the task author owns only the judge (300s)
-and grader (120s) timeouts. Past it the solution is killed at exit 124 and
-the case scores 0.0, which on the board is indistinguishable from a wrong
-answer. Ship a copy-pasteable `trap.yaml` snippet with the `timeout:` this
-task actually needs; the generated `judge.py` and `grader.py` report the
-condition explicitly (`timed_out`, `n_timed_out`) so it's diagnosable when
-someone misses the note.
-
-Note the cost caveat in the README rather than trying to fix it in
-`grader.py`: `trap` prices prompt and completion with no cache tier, and a
-harness serving ~99% of its prompt tokens from cache is mispriced by about
-two orders of magnitude. `references/calibration.md` explains what that
-does and doesn't mean.
+default per-case ceiling in the *solution's* `trap.yaml`, and nothing in
+`traptask.yaml` can raise it. Past it the case is killed at exit 124 and
+scores 0.0, which reads as a wrong answer rather than a misconfiguration.
+Ship a copy-pasteable `trap.yaml` snippet with the `timeout:` this task
+needs. `references/calibration.md` has the three ceilings and who owns
+each, plus the cost caveat to note in the README (cached runs are
+mispriced, and that is not something `grader.py` can fix).
 
 Once the task passes its own tests and `validate_task.py`, the latency
 check above is clear, and the legal/IP question from step 5 of the
