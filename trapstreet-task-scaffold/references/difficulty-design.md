@@ -19,20 +19,47 @@ monthly files with a policy memo, a customer master, a document index, a
 decoy and one short month took the same harness from 9-10 out of 10 to 1
 out of 10.
 
-The published work says why: agent performance degrades non-linearly in the
-number of nested sub-goals, with a sharp knee, and planning failures
-dominate because they arise early and propagate. Single-step computational
-difficulty is the flat part of that curve.
+The published work says why, and it names the two things worth measuring:
 
-**Make horizon and depth build parameters**, so difficulty is something you
-rescale rather than redesign. `ledger_close` exposes number of periods,
-items per period, supplement size, decoy count, and how much evidence the
-memo gives for the rule change. Two builds and a rescale walked the score
-9 -> 1 -> 6; eight rounds of redesign had not moved it at all.
+- **Intrinsic horizon (H\*)** -- the minimum number of effective actions
+  needed to complete the task. Not how many an agent takes; the floor.
+- **Compositional depth (s)** -- how many layers of nested sub-goals and
+  conditional branches sit between the question and the answer.
 
-Practical consequence: when a first build lands at the ceiling or the
-floor, reach for those parameters. Inventing new question types is the
-expensive move that usually does nothing.
+Performance degrades non-linearly in **s**, with a sharp knee: success
+"transitions abruptly from partial robustness to near-systematic failure."
+Planning failures dominate, because they arise early and propagate through
+everything downstream. Single-step computational difficulty is the flat
+part of that curve, which is why eight rounds of making the step harder did
+nothing.
+
+Both are countable before you build anything. `ledger_audit` was H\* ~ 1
+and s ~ 1 -- read one sheet, compute. `ledger_close` at 12 months is H\*
+in the dozens (open the memo, resolve the policy, open each month, filter,
+reconcile) and s of 3-4, because the memo's rule change gates how each
+month is read, which gates the aggregate. That difference, not the
+arithmetic, is the entire 9/10 -> 1/10.
+
+**Make H\* and s build parameters**, so difficulty is something you rescale
+rather than redesign. `ledger_close` exposes number of periods, items per
+period, supplement size, decoy count, and how much evidence the memo gives
+for the rule change. Two builds and a rescale walked the score 9 -> 1 -> 6;
+eight rounds of redesign had not moved it at all.
+
+Two practical consequences of the knee:
+
+- **When a build lands at the ceiling or the floor, reach for the
+  parameters** -- you are on a flat part of the curve, and inventing new
+  question types is the expensive move that does nothing. A build at 1/10
+  is not "hard", it is past the cliff and measuring nothing, exactly like a
+  build at 10/10.
+- **Aim the case set at the knee, and record where each case sits.** Carry
+  s in `expected/<id>/answer.json`, echo it from `judge.py` into the
+  metrics dict, and point `grader.py`'s `CATEGORY_FIELD` at it. The
+  by-category breakdown is then the curve itself: one run tells you which
+  depth the configuration you are measuring falls off at, instead of an
+  aggregate that hides it. Same reason `calibration.md` asks for
+  per-question rates rather than a total.
 
 ## Do not hand the procedure over in the question
 

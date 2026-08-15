@@ -48,14 +48,17 @@ finished task discriminates; the rest is craft around them.
    two competent humans could reasonably disagree on whether an answer is
    right, that's a sign the scoring needs either a very carefully curated
    rubric or a different, more objective framing of the task.
-3. **What is supposed to make this hard, and is that thing real?** The
-   intuitive answers here are mostly wrong: harder arithmetic, defects a
-   human would be slow to spot, and capability gates the shell can
-   synthesise all failed to move a bare harness at all, while restructuring
-   the same questions across a longer horizon took the same harness from
-   9/10 to 1/10. Read `references/difficulty-design.md` before answering --
-   it is the difference between a task that discriminates and a task that
-   everyone passes.
+3. **What is supposed to make this hard, and is that thing real?** Answer
+   it in the two quantities that actually predict the score: **H\***, the
+   minimum number of effective actions the task requires, and **s**, the
+   layers of nested sub-goals and conditional branches. Performance falls
+   off non-linearly in s with a sharp knee, while the intuitive answers
+   (harder arithmetic, defects a human would be slow to spot, capability
+   gates a shell can synthesise) sit on the flat part and moved a bare
+   harness not at all -- restructuring the same questions to a deeper s
+   took it from 9/10 to 1/10. Read `references/difficulty-design.md`
+   before answering; it is the difference between a task that
+   discriminates and one everyone passes.
 4. **Where does ground truth come from?** Computed from a seed (no answer
    for anyone to get wrong, and leakage is impossible by construction),
    real historical data (leakage risk, but credible), or hand-authored
