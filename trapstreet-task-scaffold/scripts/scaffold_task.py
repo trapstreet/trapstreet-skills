@@ -181,6 +181,7 @@ from pathlib import Path
 from typing import Any
 
 SENTINEL = "ANSWER:"
+TIMEOUT_EXIT_CODE = 124  # trap's sentinel for "killed for outrunning its timeout"
 
 
 def extract_sentinel_answer(stdout: str, sentinel: str = SENTINEL) -> str | None:
@@ -259,6 +260,17 @@ def main() -> None:
 
     base = {{"id": expected.get("id")}}
 
+    if exit_code == TIMEOUT_EXIT_CODE:
+        # trap kills a solution that outruns trap.yaml's `timeout` (default 600s)
+        # and records 124. Say so, rather than letting a config problem read as a
+        # wrong answer -- the task author cannot set that ceiling, only document
+        # the value this task needs. See references/calibration.md.
+        print(json.dumps({{**base, "score": 0.0, "timed_out": True,
+                           "reason": "solution hit trap.yaml's timeout (exit 124) -- "
+                                     "this task needs it raised; see the task README",
+                           "agent_output": stdout.strip()[:500]}}))
+        return
+
     if exit_code != 0:
         print(json.dumps({{**base, "score": 0.0, "reason": f"solution exited {{exit_code}}",
                            "agent_output": stdout.strip()[:500]}}))
@@ -296,6 +308,7 @@ from collections import Counter
 
 PASS_THRESHOLD = 0.5
 CATEGORY_FIELD = "category"  # change to match your judge.py's metrics dict, or None to disable
+TIMEOUT_EXIT_CODE = 124  # trap's sentinel for "killed for outrunning trap.yaml's timeout"
 
 
 def main() -> None:
@@ -337,6 +350,12 @@ def main() -> None:
 
     n_passed = sum(1 for c in scored if c["metrics"]["score"] == 1.0)
 
+    # One timed-out case is a solution that set its ceiling too low; most of them
+    # timing out means this task needs a `timeout:` the default doesn't give it,
+    # and the task README should say so. Surfaced here so it's visible at run
+    # level instead of hiding as a run of zeros.
+    n_timed_out = sum(1 for c in cases if c.get("exit_code") == TIMEOUT_EXIT_CODE)
+
     passed = bool(scored) and accuracy >= PASS_THRESHOLD
 
     print(json.dumps({{
@@ -346,6 +365,7 @@ def main() -> None:
         "n_total": len(cases),
         "n_scored": len(scored),
         "n_skipped_no_gold": len(skipped),
+        "n_timed_out": n_timed_out,
         "threshold": PASS_THRESHOLD,
         "by_category": by_category_pct,
         "latency_ms_median": latency_ms_median,
@@ -437,6 +457,25 @@ State the answer format here, since this is what the solution reads. If
 judge.py uses the sentinel helper, say so explicitly -- e.g. "print your
 answer on its own line as `ANSWER: <value>`; you may write whatever else
 you like around it, and the last such line is the one scored."
+
+## Wiring up a solution
+
+TODO: a copy-pasteable trap.yaml snippet. Include `timeout:` explicitly if
+this task's cases run anywhere near trap's 600s default -- that ceiling is
+the SOLUTION author's to set and nothing in traptask.yaml can raise it, so
+this README is the only place they can learn what the task needs. A case
+that outruns it is killed at exit 124 and scores 0.0, which looks exactly
+like a wrong answer.
+
+```yaml
+name: my-solution
+cmd: uv run python solution.py
+timeout: 600        # TODO: raise if this task's cases need it
+
+tasks:
+  {task_name}:
+    source: /path/to/this/task
+```
 
 ## Scoring
 

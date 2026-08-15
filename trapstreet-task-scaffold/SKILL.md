@@ -228,6 +228,16 @@ unpublishable regardless of how good the questions were. Look at the mean
 137-3871s on one build) separates solutions even where accuracy doesn't, so
 it's signal worth keeping, but a slow tail plus a slow mean is a rebuild.
 
+**If cases run anywhere near 600s, the README has to say so.** That's the
+default per-case ceiling in the *solution's* `trap.yaml`, and no field in
+`traptask.yaml` can raise it -- the task author owns only the judge (300s)
+and grader (120s) timeouts. Past it the solution is killed at exit 124 and
+the case scores 0.0, which on the board is indistinguishable from a wrong
+answer. Ship a copy-pasteable `trap.yaml` snippet with the `timeout:` this
+task actually needs; the generated `judge.py` and `grader.py` report the
+condition explicitly (`timed_out`, `n_timed_out`) so it's diagnosable when
+someone misses the note.
+
 Note the cost caveat in the README rather than trying to fix it in
 `grader.py`: `trap` prices prompt and completion with no cache tier, and a
 harness serving ~99% of its prompt tokens from cache is mispriced by about

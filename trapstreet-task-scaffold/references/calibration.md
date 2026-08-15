@@ -97,6 +97,39 @@ per case, which made it unusable as a public board regardless of how good
 the questions were. Check the mean and the tail before publishing, not
 after.
 
+### The timeout is the solution's, and its default will bite you
+
+`trap` has three wall-clock ceilings and the task author owns only two of
+them:
+
+| ceiling | default | owned by |
+|---|---|---|
+| solution, per case | **600s** | the *solution* author, in `trap.yaml` |
+| `judge.timeout`, per case | 300s | the task author, in `traptask.yaml` |
+| `grader.timeout`, per run | 120s | the task author, in `traptask.yaml` |
+
+There is no task-side field that caps or raises how long a solution may
+run. So a slow task silently punishes every solution that never thought
+about it: past 600s the process is killed, the case is recorded as exit
+124, and a judge that only checks `exit_code != 0` scores it 0.0 with a
+generic reason. On the board that reads as a wrong answer, not a
+misconfiguration.
+
+The `ledger_close` build that ships averages 509s per case against that
+600s default, with individual hard cases well past it. Two things follow:
+
+- **State the required `timeout:` in the task README**, in a copy-pasteable
+  `trap.yaml` snippet, the way `personality/mbti_profile` does. It is the
+  only channel a task author has.
+- **Make the judge say "timed out" explicitly.** Branch on exit code 124
+  and return a reason that names the ceiling, so the run is diagnosable
+  from the metrics alone. The scaffold's `judge.py` does this; the
+  `grader.py` it generates also counts `n_timed_out` at run level, because
+  one timed-out case is a solution problem and ten is a task problem.
+
+And note that a task whose honest runtime exceeds the default by a lot is
+telling you something -- see the 27-minute build above.
+
 **Caching distorts the cost number, and not in the task's control.** One
 harness served 98.9% of a turn's prompt tokens from cache (`cacheReadTokens
 43,136` against `inputTokens 481`). `trap`'s cost model has two dimensions,
