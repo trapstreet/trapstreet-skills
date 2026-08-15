@@ -3,11 +3,12 @@
 
 Catches structural mistakes independent of the task's specific domain:
 build_cases.py actually running clean, traptask.yaml's case list matching
-gold.cases.json (a common copy-paste-drift bug), inputs/ not accidentally
-containing anything from expected/ (a real staging mistake -- would leak
-the answer), and judge.py surviving obviously-malformed input without
-crashing (empty output, garbage non-JSON, one level of nesting weirdness)
-if score_case() has actually been implemented.
+gold.cases.json (a common copy-paste-drift bug), case ids not describing
+their own case (the path is readable by the solution), inputs/ not
+accidentally containing anything from expected/ (a real staging mistake --
+would leak the answer), and judge.py surviving obviously-malformed input
+without crashing (empty output, garbage non-JSON, one level of nesting
+weirdness) if score_case() has actually been implemented.
 
 This does NOT replace real unit tests in tests/ -- it catches a different,
 narrower class of mistake that's easy to make and easy to miss by eye.
@@ -18,6 +19,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -100,6 +102,38 @@ def check_no_answer_leak_into_inputs(task_dir: Path) -> list[str]:
     return problems
 
 
+def check_case_ids_are_opaque(task_dir: Path) -> list[str]:
+    """A descriptive case id leaks the answer through the directory path
+    alone -- TRAP_MANIFEST's inputs_dir is literally .../inputs/<case_id>,
+    and a solution can read its own path.
+
+    The rule this enforces: ids may differ from each other ONLY by a numeric
+    suffix, so `case_01`/`case_02` and `ledger_01`/`ledger_02` pass while
+    `off_by_one_case` or `leopard_01`/`tiger_02` fail. A constant prefix
+    carries no per-case information -- though if the prefix itself names
+    what every case is hiding, rename it anyway."""
+    problems = []
+    gold = json.loads((task_dir / "gold.cases.json").read_text())
+    prefixes = set()
+    for case in gold["cases"]:
+        cid = str(case.get("id", ""))
+        m = re.match(r"^(.*?)(\d+)$", cid)
+        if not m:
+            problems.append(
+                f"case id {cid!r} has no numeric suffix -- use an opaque id (case_01, ...) "
+                "and keep the real label in expected/<id>/answer.json, which the solution never sees"
+            )
+            continue
+        prefixes.add(m.group(1))
+
+    if len(prefixes) > 1:
+        problems.append(
+            f"case ids differ by more than a numeric suffix ({sorted(prefixes)}) -- a per-case "
+            "label in the id hands the solution its own answer through inputs_dir"
+        )
+    return problems
+
+
 def check_judge_survives_malformed_input(task_dir: Path) -> list[str]:
     """If score_case() has been implemented (no longer the NotImplementedError
     stub), throw obviously-malformed input at it and confirm it degrades to
@@ -139,6 +173,7 @@ CHECKS = [
     ("build_cases.py runs clean", check_build_cases_runs_clean),
     ("build_cases.py is idempotent", check_idempotent),
     ("traptask.yaml matches gold.cases.json", check_traptask_yaml_matches_gold),
+    ("case ids are opaque", check_case_ids_are_opaque),
     ("no answer leak into inputs/", check_no_answer_leak_into_inputs),
     ("judge.py survives malformed input", check_judge_survives_malformed_input),
 ]

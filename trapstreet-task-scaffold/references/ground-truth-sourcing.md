@@ -19,6 +19,35 @@ and what the domain needs. Some real tasks in this repo mix both: original
 content where leakage risk is unacceptable (word puzzles), real content
 where leakage risk is mitigable (obscure bugfix commits, real API docs).
 
+If you land on the synthetic side, read the next section before writing a
+single answer down -- *how* the synthetic answer is produced matters as
+much as the real/synthetic choice itself.
+
+## Compute the ground truth. Never author it.
+
+`gold.cases.json` in both ledger tasks carries a question kind, a seed and
+a size -- and no answers. `build_cases.py` generates the data from the
+seed and derives the answer from the data it just generated.
+
+Three things follow, and the third matters more than it sounds:
+
+- Authoring cost per case drops to three lines of JSON, so scaling the set
+  up or regenerating it at a different difficulty is nearly free (see
+  `difficulty-design.md` on making horizon and depth build parameters).
+- There is no corpus to be contaminated by -- leakage is structurally
+  impossible, not merely improbable.
+- **There is no answer for a human to get wrong.** A hand-authored answer
+  is one more thing that can be subtly inconsistent with the material, and
+  when a solution then "fails" that case, the failure looks like the
+  solution's. Six such failures in one day turned out to be authoring
+  mistakes -- see `calibration.md`, "When the solution fails, suspect your
+  data first".
+
+This is SWE-bench's trick in miniature: its ground truth is the test the
+developer already wrote, and the filter is that the test fails before the
+patch and passes after. Whenever the domain admits a generator-and-deriver
+shape, prefer it to a curated answer key.
+
 ## Mitigating leakage risk in real data
 
 If using real data, these measures reduce (never eliminate) the risk that

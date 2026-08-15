@@ -16,6 +16,11 @@ score_case() and build_cases.py's validate_case()/the render logic ARE
 meant to be edited after generation -- they're stubbed with a TODO and a
 NotImplementedError so you can't accidentally ship the stub.
 
+Two helpers ship working rather than stubbed, because they were the same
+in every task that got them right: judge.py's sentinel answer extraction
+(never read an answer by position -- agentic solutions narrate under it)
+and build_cases.py's assert_answer_absent_from_inputs().
+
 Usage:
     python3 scaffold_task.py \\
         --output-dir <path to trapstreet-tasks>/tasks/<category> \\
@@ -60,11 +65,62 @@ def validate_case(case: dict) -> None:
     """TODO customization point. Fail loudly (raise ValueError) on
     authoring mistakes: missing fields, out-of-range values, disallowed
     licenses, duplicate structure, whatever invariants your task needs.
-    See references/scoring-design.md and references/ground-truth-sourcing.md
-    for what to check before you write this."""
+
+    This is also where the task's FAIRNESS invariants belong -- review
+    doesn't survive the next regeneration, an assertion does. The list, with
+    the war story behind each, is in references/difficulty-design.md under
+    "Make fairness a build invariant": the rule can actually be induced from
+    the examples given, three examples pin it down rather than one, nothing
+    is left unexplained after the examples stop, no closed-form shortcut
+    reaches the answer, and the answer isn't guessable from a small set.
+
+    Read references/ground-truth-sourcing.md and references/scoring-design.md
+    before writing this."""
     raise NotImplementedError(
         "validate_case() is a stub -- implement real validation for your task's fields"
     )
+
+
+def _leaf_values(obj: object):
+    if isinstance(obj, dict):
+        for v in obj.values():
+            yield from _leaf_values(v)
+    elif isinstance(obj, list):
+        for v in obj:
+            yield from _leaf_values(v)
+    else:
+        yield obj
+
+
+def assert_answer_absent_from_inputs(answer: object, in_dir: Path) -> None:
+    """The one fairness invariant that's fully mechanical: a case must not
+    state its own answer anywhere the solution can read, including a README
+    inside inputs/. Easy to violate once inputs are generated rather than
+    hand-written, and invisible afterwards.
+
+    Only distinctive values are checked -- short tokens (a voucher id, a
+    single digit) legitimately appear in the material, and flagging those
+    would just train you to ignore this assertion. Widen or narrow the
+    thresholds to fit your domain."""
+    needles = []
+    for value in _leaf_values(answer):
+        if isinstance(value, str) and len(value) >= 8:
+            needles.append(value)
+        elif isinstance(value, (int, float)) and not isinstance(value, bool) and abs(value) >= 1000:
+            needles.append(str(value))
+
+    if not needles:
+        return
+
+    haystack = "\\n".join(
+        p.read_text(errors="ignore") for p in in_dir.rglob("*") if p.is_file()
+    )
+    for needle in needles:
+        if needle in haystack:
+            raise ValueError(
+                f"case {in_dir.name}: answer value {needle!r} appears verbatim in "
+                f"inputs/ -- the solution can read it instead of working it out"
+            )
 
 
 def build() -> None:
@@ -74,7 +130,7 @@ def build() -> None:
         validate_case(case)
         cid = case["id"]
         if cid in seen_ids:
-            raise ValueError(f"duplicate case id: {{cid}}")
+            raise ValueError(f"duplicate case id: {cid}")
         seen_ids.add(cid)
 
         in_dir = HERE / "inputs" / cid
@@ -83,6 +139,11 @@ def build() -> None:
         # see into in_dir, derived from `case`'s fields. Never include the
         # answer or anything that reveals it (see the case-ID-naming note
         # above, and the leakage-risk sections in references/).
+        #
+        # If gold.cases.json carries a seed and a size rather than an answer,
+        # this is where the material gets generated and where the answer gets
+        # DERIVED from it -- see references/ground-truth-sourcing.md,
+        # "Compute the ground truth".
 
         exp_dir = HERE / "expected" / cid
         exp_dir.mkdir(parents=True, exist_ok=True)
@@ -90,7 +151,16 @@ def build() -> None:
         # whatever judge.py's score_case() needs to grade this case. This
         # directory is judge-only -- the solution never sees it.
 
-    print(f"Built {{len(data['cases'])}} cases.")
+        answer_path = exp_dir / "answer.json"
+        if not answer_path.exists():
+            raise ValueError(
+                f"case {cid}: expected/{cid}/answer.json was not written. judge.py reads that "
+                "exact path, and skipping it would also skip the answer-leak assertion below -- "
+                "an invariant that quietly does nothing is worse than no invariant."
+            )
+        assert_answer_absent_from_inputs(json.loads(answer_path.read_text()), in_dir)
+
+    print(f"Built {len(data['cases'])} cases.")
 
 
 if __name__ == "__main__":
@@ -106,8 +176,55 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any
+
+SENTINEL = "ANSWER:"
+
+
+def extract_sentinel_answer(stdout: str, sentinel: str = SENTINEL) -> str | None:
+    """Take the answer from a sentinel line -- the LAST one, if several.
+
+    Agentic solutions narrate: they print the answer and then explain what
+    they did. Any positional rule ("the last non-empty line") scores those
+    correct answers 0.0, and does it invisibly -- one real ten-case run
+    reported 2/10 where the truth was 6/10. See references/scoring-design.md.
+
+    Whatever asks for this format has to tell the solution about it, in the
+    task README or the per-case prompt; a format rule nobody saw is a gotcha
+    rather than a measurement.
+
+    Delete this pair if the task's answer is a list of findings rather than
+    one value -- the equivalent there is a fenced JSON block, parsed the same
+    position-independent way."""
+    found = None
+    for line in stdout.splitlines():
+        stripped = line.strip()
+        if stripped.upper().startswith(sentinel.upper()):
+            found = stripped[len(sentinel):].strip()
+    return found
+
+
+def answers_match(got: str, want: str, tol: float = 1e-6) -> bool:
+    """Compare numerically when both sides parse as numbers, so `12,345.67`,
+    `$12345.67` and `12345.670` are one answer rather than three. Falls back
+    to a case-folded string comparison.
+
+    The default tolerance is formatting slack, not domain slack -- widen it
+    only where the domain says a near miss is right (0.005 for a currency
+    total rounded to cents, say). A cent of slack in a ledger task can be
+    exactly the difference the task exists to detect."""
+    def as_number(s: str) -> float | None:
+        try:
+            return float(re.sub(r"[,$\\s]", "", s))
+        except ValueError:
+            return None
+
+    g, w = as_number(got), as_number(want)
+    if g is not None and w is not None:
+        return abs(g - w) <= tol
+    return got.strip().casefold() == want.strip().casefold()
 
 
 def score_case(stdout: str, expected: dict) -> dict[str, Any]:
@@ -116,6 +233,14 @@ def score_case(stdout: str, expected: dict) -> dict[str, Any]:
     contents of expected/<id>/answer.json) and return a dict that MUST
     include "score" (float, 0.0-1.0). Everything else is free-form
     diagnostic data.
+
+    For a scalar answer, that's roughly:
+
+        got = extract_sentinel_answer(stdout)
+        if got is None:
+            return {{"score": 0.0, "reason": f"no {{SENTINEL}} line in output"}}
+        return {{"score": 1.0 if answers_match(got, expected["answer"]) else 0.0,
+                 "got": got}}
 
     Read references/scoring-design.md before writing this -- in
     particular the anti-shotgun, keyword-matching, and malformed-output
@@ -261,11 +386,12 @@ sys.path.insert(0, str(ROOT))
 import build_cases  # noqa: E402
 
 
-def test_validate_case_is_implemented():
-    """This fails until you replace build_cases.validate_case()'s
-    NotImplementedError stub with real validation logic. Once you do,
-    replace this test with real cases: valid-case-passes, and one
-    test per invariant validate_case() is supposed to catch."""
+def test_validate_case_is_still_a_stub():
+    """A tripwire, not a real test: it passes only while
+    build_cases.validate_case() is the NotImplementedError stub, and goes
+    red the moment you implement it. That red is the cue to delete this and
+    write real cases -- valid-case-passes, plus one test per invariant
+    validate_case() is supposed to catch."""
     with pytest.raises(NotImplementedError):
         build_cases.validate_case({})
 '''
@@ -279,12 +405,14 @@ sys.path.insert(0, str(ROOT))
 import judge  # noqa: E402
 
 
-def test_score_case_is_implemented():
-    """This fails until you replace judge.score_case()'s
-    NotImplementedError stub with real scoring logic. Once you do, replace
-    this test with real cases -- see references/scoring-design.md for the
-    known-exploit cases you should specifically test for (substring vs.
-    word-boundary matching, malformed JSON, Infinity/NaN, anti-shotgun)."""
+def test_score_case_is_still_a_stub():
+    """A tripwire, not a real test: it passes only while judge.score_case()
+    is the NotImplementedError stub, and goes red the moment you implement
+    it. That red is the cue to delete this and write real cases -- see
+    references/scoring-design.md for the known-exploit cases worth testing
+    specifically (sentinel extraction with narration after the answer,
+    substring vs. word-boundary matching, malformed JSON, Infinity/NaN,
+    anti-shotgun)."""
     with pytest.raises(NotImplementedError):
         judge.score_case("", {})
 '''
@@ -305,11 +433,20 @@ this task -- no reliable relative path between the two, reference by name).
 TODO: describe exactly what the solution receives (inputs/<id>/...) and
 what it must print to stdout.
 
+State the answer format here, since this is what the solution reads. If
+judge.py uses the sentinel helper, say so explicitly -- e.g. "print your
+answer on its own line as `ANSWER: <value>`; you may write whatever else
+you like around it, and the last such line is the one scored."
+
 ## Scoring
 
 TODO: describe score_case()'s logic in plain language, and state any known
 limitations plainly (see references/scoring-design.md's "known ceiling"
 framing for keyword matching, if applicable).
+
+If cost is shown for this task, note that `trap` prices prompt and
+completion with no cache tier, so runs that hit a provider's prompt cache
+are priced well above what they actually cost.
 
 ## Sources & licensing
 
@@ -354,17 +491,29 @@ def main() -> int:
     print(f"Task scaffold written to {task_dir}")
     print()
     print("Next steps -- in this order, since later steps depend on earlier ones:")
-    print("  1. Read ../references/ground-truth-sourcing.md and legal-ip-checklist.md")
+    print("  1. Read ../references/difficulty-design.md and decide what actually makes this")
+    print("     hard. Horizon and depth move scores; harder arithmetic does not.")
+    print("  2. Read ../references/ground-truth-sourcing.md and legal-ip-checklist.md")
     print("     BEFORE sourcing any real case material -- decide local-only vs. public now.")
-    print("  2. Fill in real cases in gold.cases.json (replace the placeholder case objects).")
-    print("  3. Implement build_cases.py's validate_case() and the two render TODOs.")
-    print("  4. Read ../references/scoring-design.md, then implement judge.py's score_case().")
-    print("  5. Fill in traptask.yaml's description/tags per case.")
-    print("  6. Replace the stub tests in tests/ with real coverage -- exact hit, near-miss,")
+    print("  3. PROBE ONE candidate question before authoring the set: the configuration you")
+    print("     intend to pass must pass, and a bare one given every resource must fail.")
+    print("     Cheap now, expensive after ten cases exist. See ../references/calibration.md.")
+    print("  4. Fill in real cases in gold.cases.json (prep ~3x what you'll ship -- most")
+    print("     candidate questions don't survive step 3).")
+    print("  5. Implement build_cases.py's validate_case() -- including the fairness")
+    print("     invariants -- and the two render TODOs.")
+    print("  6. Read ../references/scoring-design.md, then implement judge.py's score_case().")
+    print("     Extract answers by sentinel, never by position.")
+    print("  7. Fill in traptask.yaml's description/tags per case.")
+    print("  8. Replace the stub tests in tests/ with real coverage -- exact hit, near-miss,")
     print("     malformed input, and any exploit class from scoring-design.md that applies.")
-    print("  7. python3 build_cases.py && python3 -m pytest tests/ -v")
-    print("  8. Run scripts/validate_task.py (in this skill) for an end-to-end self-consistency check.")
-    print("  9. Fill in README.md, including the sources/licensing table if using real material.")
+    print("     Add the ablation replay: each trap, replayed wrong, must change the answer.")
+    print("  9. python3 build_cases.py && python3 -m pytest tests/ -v")
+    print(" 10. Run scripts/validate_task.py (in this skill) for an end-to-end self-consistency check.")
+    print(" 11. Fill in README.md -- sources/licensing if using real material, and the answer")
+    print("     format the solution is expected to print.")
+    print(" 12. Calibrate before publishing: >=3 repeats of the same build, per-question rates")
+    print("     rather than a total, and check mean/tail latency (../references/calibration.md).")
     return 0
 
 

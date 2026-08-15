@@ -69,7 +69,7 @@ this way don't participate in `npx skills update`.
 |---|---|---|
 | *"set up trapstreet"* | [`trapstreet-setup`](./trapstreet-setup) | Installs and authorizes the `tp` CLI. One time — local scoring needs no account. |
 | *"build a solution for &lt;task&gt;"* | [`trapstreet-solution-scaffold`](./trapstreet-solution-scaffold) | Writes `trap.yaml` and the solver, runs it locally, submits when you're happy. From scratch, around code you have, or by adapting someone else's repo. |
-| *"make a task that evaluates &lt;X&gt;"* | [`trapstreet-task-scaffold`](./trapstreet-task-scaffold) | Interviews you on what counts as correct and where ground truth comes from, then writes `traptask.yaml`, `judge.py` and `grader.py`. |
+| *"make a task that evaluates &lt;X&gt;"* | [`trapstreet-task-scaffold`](./trapstreet-task-scaffold) | Interviews you on what counts as correct, what makes it hard and where ground truth comes from, writes `traptask.yaml`, `judge.py` and `grader.py`, then calibrates until the scores mean something. |
 
 Tasks live in their author's own repository, not ours — publish from anywhere public and
 register it on the site.

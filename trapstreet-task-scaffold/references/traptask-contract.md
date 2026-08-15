@@ -117,6 +117,19 @@ def build() -> None:
 Run `python3 build_cases.py` after every edit to `gold.cases.json` --
 `inputs/`/`expected/` are generated output, never hand-edited.
 
+Two things worth deciding here rather than later:
+
+- **`gold.cases.json` does not have to contain answers.** A case can be a
+  question kind, a seed and a size, with `build()` generating the material
+  and deriving the answer from what it generated. See
+  `ground-truth-sourcing.md`, "Compute the ground truth".
+- **`validate_case()` is where fairness invariants live.** Anything you
+  would otherwise check by reading the cases over -- no shortcut, not
+  guessable, the answer absent from the inputs, enough examples to pin the
+  rule down -- belongs here as an assertion, because review does not
+  survive the next regeneration. The list is in `difficulty-design.md`,
+  "Make fairness a build invariant".
+
 ## Case ID naming -- never let it leak the answer
 
 A case ID like `leopard_01` or `off_by_one_case` hands the solution the

@@ -5,6 +5,44 @@ a task, not a theoretical concern. Design the judge assuming a determined
 solution author (or a skill that happens to phrase things a certain way)
 will find any gap.
 
+## Extract the answer with a sentinel, never by position
+
+An early judge took the answer from the last non-empty line of stdout. In
+one ten-case run, four correct answers scored 0.0 because the harness
+printed the right figure and then wrote a short summary underneath --
+several of them stating, accurately from their own point of view, that they
+had complied with the format.
+
+The reported score was 2/10. The true score was 6/10, and the task's
+difficulty was nearly dialled down on the strength of that.
+
+Ask for a sentinel line instead, and read the **last** occurrence of it:
+
+```
+ANSWER: 12345.67
+```
+
+It costs the solution one line and lets it write whatever it likes around
+that. Compare numerically where the answer is a number, so `12,345.67` and
+`$12345.67` are the same answer. State the convention in whatever the
+solution actually reads (the task README or the per-case prompt) -- a
+format rule the solution never saw is a gotcha, not a measurement. When the
+sentinel is absent, score 0.0 with a reason, the same way as any other
+malformed output below.
+
+The same shape works for structured answers: ask for a fenced JSON block
+with a marker and parse the last one. The principle is position
+independence, not the specific `ANSWER:` string.
+
+**The general failure this belongs to:** agentic solutions explain
+themselves. Three tasks in this repo have lost correct answers to scoring
+that keyed on *form* rather than content -- a code-review case that
+required one of a curated list of phrasings and got a correct diagnosis at
+the exact right line worded differently, an OCR case where "the first
+sentence" admitted two defensible readings, and this one. A judge written
+with a single terse model call in mind punishes an agent for narrating its
+work, systematically and invisibly.
+
 ## Anti-shotgun
 
 If a solution can list every plausible answer and get credit for
@@ -49,6 +87,11 @@ the right concept, two real exploits were found the hard way:
 issue." This is a structural limit of the technique, not a bug to chase
 down further -- state it plainly in the task's README rather than pretend
 it's solved.
+
+Because this style of judge scores wording, every miss it reports is also a
+candidate curation gap. Read the actual output before believing a 0.0 --
+`calibration.md`, "When the solution fails, suspect your data first", is
+the same lesson arriving through a different door.
 
 ## Malformed-output robustness
 
