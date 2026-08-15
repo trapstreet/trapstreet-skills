@@ -51,6 +51,11 @@ a conclusion from needs to survive repetition:
 τ-bench's `pass^k` is the formal version: a system at 90% pass@1 sits at
 57% when all 8 attempts must succeed.
 
+Note where this bites hardest. A well-aimed task sits near the knee in
+`difficulty-design.md`, which is also where per-question rates are furthest
+from 0 and 1 -- and a rate near 1/2 is the noisiest one there is. The
+better the task is aimed, the less a single run is worth.
+
 ## Prove each mechanism changes the answer -- item by item
 
 Every trap, decoy and gap should be replayed *with the mistake made*, and

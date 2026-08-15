@@ -97,8 +97,11 @@ died before any cases had been authored around it, which is the only
 reason that discovery was cheap.
 
 If the bare configuration passes, the question is not measuring what you
-think. Change the design (horizon and depth are the parameters that
-actually move it) and probe again before scaling up.
+think. Change the design and probe again before scaling up -- and reach
+for horizon rather than for a harder question. Because the falloff has a
+knee, the score is a dial you set rather than a property you discover:
+pick the score the reference configuration should get, then rescale the
+horizon until it gets it.
 
 `references/calibration.md` covers this and everything downstream of it.
 

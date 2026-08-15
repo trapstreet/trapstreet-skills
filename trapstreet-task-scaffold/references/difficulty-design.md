@@ -61,6 +61,48 @@ Two practical consequences of the knee:
   aggregate that hides it. Same reason `calibration.md` asks for
   per-question rates rather than a total.
 
+## Horizon is the calibration knob
+
+Take the knee seriously and it inverts the whole workflow. If the falloff
+is that sharp, **the score is not something you discover about a task, it
+is something you set.** Push the horizon past the knee and any target
+score lands. That is the calibration knob eight rounds of arithmetic
+redesign were looking for and never found.
+
+So don't build a task and then ask what it scores. Pick the score the
+reference configuration should get, and rescale until it gets it -- two
+builds and a rescale, against eight rounds that moved nothing.
+
+**Two axes, not one.** AgentCE-Bench names the pair, and keeping them as
+separate parameters is what makes the knob usable:
+
+- **Scalable horizons** -- how many hidden slots must be found and chained
+  before the answer exists. This grows H\* directly.
+- **Controllable difficulty** -- the decoy budget: how much material is
+  present that has to be recognised and rejected. This raises difficulty
+  *without* lengthening the minimum path.
+
+They cost different things, which is the practical reason not to conflate
+them into one "difficulty" number. Horizon buys difficulty with wall-clock,
+and wall-clock is a publishing gate -- it is what put one build at 27
+minutes per case and made it unpublishable regardless of question quality
+(`calibration.md`). Decoys buy difficulty without extending the minimum
+path, so when the latency gate binds, the decoy budget is the axis with
+room left in it.
+
+**Where to aim:** not the ceiling, not the floor, but the region where
+per-question success sits well away from 0 and 1. That is also the region
+of highest variance -- the knee is precisely where a single run tells you
+least, so the "at least 3 trials" rule in `calibration.md` bites hardest
+exactly where you will be doing the most calibrating.
+
+**And say where you set it.** Because the score is a dial, "this
+configuration scores 6/10" means nothing without the build parameters next
+to it. Put the parameter values and the measured score in the task README
+as a table, the way `ledger_close` does -- otherwise the next person
+regenerates at different settings and compares two numbers that were never
+comparable.
+
 ## Do not hand the procedure over in the question
 
 The single most repeated mistake -- seven of the first ten questions.
