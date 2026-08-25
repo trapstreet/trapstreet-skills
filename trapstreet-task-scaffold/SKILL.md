@@ -57,7 +57,12 @@ finished task discriminates; the rest is craft around them.
    shell can synthesise) sit on the flat part and moved a bare harness not
    at all. Read `references/difficulty-design.md` before answering -- it
    is the difference between a task that discriminates and one everyone
-   passes.
+   passes. Then answer a third question it raises: **what is in the
+   material?** H\* and s describe the procedure; they say nothing about
+   whether the answers are sitting in the document as plain text. Three
+   probe rounds on one task raised depth and horizon and moved a 20/20
+   ceiling not at all; changing what the document contains broke it on the
+   first attempt.
 4. **Where does ground truth come from?** Computed from a seed (no answer
    for anyone to get wrong, and leakage is impossible by construction),
    real historical data (leakage risk, but credible), or hand-authored

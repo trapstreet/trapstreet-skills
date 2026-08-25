@@ -132,3 +132,58 @@ notion of "progress" (see the Minecraft `obtain_diamond` task's
 wooden→stone→iron→diamond pickaxe ladder) -- don't add partial credit
 just because it seems more sophisticated; only add it where "how far did
 you get" is a real, orderable question for the domain.
+
+## Every judge bug found so far rejected a CORRECT answer
+
+Across two document tasks, nine judge defects reached a real run. Not one of
+them let a wrong answer through. All nine failed an answer that was right:
+
+| Rule | The correct answer it killed |
+|---|---|
+| cap of 8 figures | a reply that quoted the row it read the value from -- a date contributes two figures of its own |
+| target among the last 3 | three answers that led with the figure in bold and explained underneath |
+| target first or among the last 3 | preamble, answer, explanation -- the commonest analytical shape there is |
+| comma always a decimal point | `748,255` parsed as 748.255, failing sixteen of twenty |
+| `no_hedge` scanning the whole reply | "the figure is not shown on the chart; the bar reaches 9. ANSWER: 9" -- on a task whose premise is that the figure is not printed |
+| first number of the committed answer | "ANSWER: The 3.5-3.6 bar holds 9 participants" scored as 3.5 |
+| refusal must use a hedge phrase | "the figure does not attribute dots to individuals" -- a refusal phrased about the document, not the model |
+| a matcher demanding content the question never asked for | a correct tie answer that gave the count, as asked, without naming the ranges |
+| stripping scaffolding before reading the number | would leave nothing at all for a case whose answer *is* a year |
+
+The implication for how to test a judge: adversarial thinking about gaming
+finds the wrong class of bug. What finds these is **enumerating the shapes a
+correct answer can take** and asserting each one passes.
+
+Keep two fixture sets from real runs, not hand-written strings:
+
+- **A capable pipeline's replies** -- these carry the phrasings you did not
+  imagine. Twenty-two of them caught two of the bugs above within one run.
+- **A pipeline that cannot see the evidence at all.** On
+  `pdf_chart_reading` the text-layer arm scores 0/22, and its replies are
+  committed to the repo for exactly one reason: a judge that ever starts
+  handing that arm points has stopped measuring what the task is about.
+
+And distinguish the ways a reply can commit to nothing. "No ANSWER line" and
+"the solution returned nothing" are different failures -- two cases in one
+run were the second, and the report called them formatting problems, pointing
+the investigation at the contract when the model had in fact spent its whole
+output budget reasoning and returned an empty string.
+
+## Confirming the strict rule is safe, and naming the two empty cases
+
+The sentinel section above already says to score 0.0 when the sentinel is
+absent. The temptation, when a real run shows cases lost that way, is to add a
+lenient fallback -- "take the last number when the reply is short". Do not:
+that picks 6 out of "the bar reaches 9, up from 6 in March".
+
+Settle it with evidence instead of taste. Check whether real replies actually
+use the contract. On `pdf_chart_reading` every reply from every arm carried
+the ANSWER line, so re-judging twenty-two real replies under the strict rule
+moved no verdict -- the fallback had never been load-bearing, which is the
+argument for deleting it rather than tuning it.
+
+And distinguish the two ways a reply commits to nothing. "No ANSWER line" and
+"the solution returned nothing" are different failures. Two cases in one run
+were the second -- the model spent its whole 4,096-token output budget
+reasoning and returned an empty string -- and the report called them
+formatting problems, pointing the investigation at the contract.

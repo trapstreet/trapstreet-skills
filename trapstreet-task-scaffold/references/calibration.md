@@ -151,3 +151,43 @@ have.
 
 And do not design to defeat caching. A solution that keeps a stable prefix
 genuinely is cheaper to run, and that is worth measuring.
+
+## Two hazards when the author writes the baselines
+
+**Never let the task's gold be a solution's debugging signal.** Not even as a
+pass/fail check. On `pdf_chart_reading` the author wrote a measuring arm whose
+runtime correctly read only `document.pdf` -- and whose development loop was
+run, diff against the answer key, change the code, repeat. The fix that loop
+produced was perfectly general (outlier rejection in an axis fit) and the leak
+happened anyway, because the gold supplied the *stopping criterion*: the code
+had only ever been validated where the answers were known.
+
+The clean protocol costs nothing:
+
+- Develop and validate against a **held-out document** -- another release of
+  the same publication, with its own key generated for development use only.
+- Self-check on the target with **invariants the document states about
+  itself**; that information is available to every solution, so using it is
+  fair.
+- Then run once and report what comes out.
+
+It is also better engineering. Moving to a held-out release immediately
+surfaced three defects the same-document loop had hidden: the marker colour
+is blue in one release and grey in another (the code matched a hardcoded
+RGB), a panel's bars do not all end on the same pixel row (baselines were
+keyed on equality, so one panel became sixteen), and the legend swatch sits
+between the first panel and its caption (which cost four figures their panel
+names). None of those could surface on a document that happened to work.
+
+Separately: an arm written by whoever measured the gold is not an independent
+entrant even under a clean protocol -- same person, same understanding of the
+material. Say so next to the score.
+
+**Check shared solution code for document-specific prompts before comparing
+tools.** Four arms in the `pdf_reader` family open with "You answer questions
+from a UK Assured Shorthold Tenancy (AST) agreement" -- they were written for
+a different task. Run them unchanged against a Federal Reserve release and the
+number measures the framing, not the tool. The fix is a `--system` override
+that defaults to the existing wording, so previously published runs stay
+reproducible. Two of those arms had already been benchmarked on a different
+document under that prompt before anyone noticed.

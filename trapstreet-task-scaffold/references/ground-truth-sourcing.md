@@ -108,3 +108,57 @@ ML researchers. This should steer case selection, not just licensing:
   human curation per case, or anything that only works "if you already
   have access to X" -- the bar is "anyone can run this in any
   environment."
+
+## Gold must come from a channel the shipped artifact does not carry
+
+"Compute it, never author it" settles *how* to get the answer. It does not
+settle *from where*, and the right source flips depending on what the
+document is made of. Get this backwards and the task is correct by
+construction for whichever pipeline shares your source.
+
+| The answer lives in | Take gold from | Never from | Because |
+|---|---|---|---|
+| A digital table | reading the render by eye | the PDF's text layer | a text parser extracts the same bytes, so every parser-based solution is right by construction |
+| A chart | measuring the pre-rasterisation vector geometry | your eye | the author's own eye-read of one panel was 1/4/5/4/1 where the geometry said 2/5/6/4/1 |
+
+On `pdf_chart_reading` the figures are vector paths in the original release.
+No parser reads a data point out of a path -- but `page.get_drawings()`
+*measures* every bar and dot exactly, which is where that task's gold comes
+from. Shipping the vector charts would therefore hand a geometry-reading
+solution a perfect score for free, so the figure pages are **rasterised in
+the shipped document**. The measurement channel exists for the author and is
+removed from the artifact. Disclose the construction; it is the instrument,
+not a trick.
+
+## Check gold against something the document says about itself
+
+A measured answer key needs a check that does not come from the same
+measurement. The best ones are invariants the document states in prose:
+
+- `pdf_chart_reading`: a footnote to table 1 reads "Eighteen participants
+  submitted information in conjunction with the June 16-17, 2026, meeting;
+  one of these 18 participants did not submit projections for 2028." Every
+  panel of every figure must sum to that. The extractor asserts it and
+  refuses to write a gold file that violates it -- which caught a real bug
+  on the first run (a legend swatch counted as a panel).
+- Two figures that encode the same variable in different chart types must
+  agree bin for bin. Figure 2 (dots) and figure 3.E (histogram) did, across
+  all four panels.
+- A third-party publication of the same numbers, if one exists, is a free
+  audit -- but only as a *check*. It is also an answer key for anyone whose
+  solution fetches it, so record it under known limitations rather than
+  hoping nobody looks.
+
+Four independent confirmations is not overkill for a measured key. Three of
+the four found nothing; the fourth found the bug.
+
+## Verify no case is answerable from the parts you left readable
+
+A mixed document (some pages text, some not) needs an explicit audit that the
+readable half does not answer the questions, and a test that keeps it true.
+On `pdf_chart_reading` table 1 reports medians, central tendencies and
+ranges, never a count of participants -- so none of the twenty-two count
+questions is reachable from text. The only figures stated in words are the
+participant totals, and no case is allowed to answer with one of those. That
+is a three-line test, and without it the audit rots the first time a case is
+added.
