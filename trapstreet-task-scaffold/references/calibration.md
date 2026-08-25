@@ -47,6 +47,12 @@ a conclusion from needs to survive repetition:
   four questions sit at 100% and one at 0%.
 - If a decision hinges on ±1 question, the answer is more trials, not more
   design.
+- **And if you find yourself adding similar questions to pin a rate down,
+  that is repetition's job, not the case set's.** `pdf_chart_reading` spent 13
+  of its 22 cases estimating one reading-error rate; three cases run five
+  times each would have measured it better, for a fifth of the tokens, and
+  left ten cases to ask something else. `difficulty-design.md` has the
+  allocation rule and the redundancy check that catches this after the fact.
 
 τ-bench's `pass^k` is the formal version: a system at 90% pass@1 sits at
 57% when all 8 attempts must succeed.

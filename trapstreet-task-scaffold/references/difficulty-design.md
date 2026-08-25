@@ -281,38 +281,27 @@ break down. One case of that kind (`case_21`: table 1 prints the longer-run
 value as 2.0, figure 3.C puts everyone in the bin labelled 1.9-2.0, and the
 question asks which *range*) is what a measuring script cannot fake.
 
-## Budget cases by capability, not by question
+## Budget cases by capability, and check the budget against the data
 
-`pdf_chart_reading` shipped 22 cases. Run against seven pipelines, they
-produced **11 distinct pass/fail patterns** -- half the set was, empirically,
-indistinguishable from another case in it. Thirteen of the 22 asked the same
-thing in different clothes: read one bar's height, varying only the figure and
-the panel. Meanwhile two capabilities got one case each, and both came back
-0/7, which is a result nobody can interpret: a single item cannot separate
-"cannot do this" from "unlucky once".
+`pdf_chart_reading` shipped 22 cases. Thirteen of them asked the same thing in
+different clothes -- read one bar's height, varying only the figure and the
+panel -- while two capabilities got one case each and both came back 0/7, a
+result nobody can interpret: a single item cannot separate "cannot do this"
+from "unlucky once".
 
-The mistake has a specific origin worth recognising, because it is easy to
-repeat. The gold was a measured table of counts, and the easiest question to
-write against a table of counts is "how many in bin X". Ten of those got
-written. **Surface variety -- different figures, different panels -- was
-mistaken for variety in what was being tested.**
+The origin is worth naming because it is easy to repeat. The gold was a
+measured table of counts, and the easiest question to write against a table of
+counts is "how many in bin X". Ten of those got written. **Surface variety --
+different figures, different panels -- was mistaken for variety in what was
+being tested.**
 
-### Two purposes, two different n
+Repeats are not waste in themselves. They are waste when they are doing a job
+that repetition of *one* item does better: estimating how often a stochastic
+pipeline succeeds. That is `calibration.md`'s subject, and the fix there is n
+trials, not n lookalike items. Here the question is only how many *distinct*
+things the set asks.
 
-Repeats are not waste. They are waste when the purpose is confused:
-
-| Purpose | What it asks | How many cases |
-|---|---|---|
-| **Coverage** | does this pipeline have the capability at all? | few; for a deterministic pipeline the second case adds almost nothing |
-| **Rate** | how often does a stochastic pipeline get it right? | n set by the precision wanted |
-
-On those 13 bar-reading cases the measuring pipeline passed all 13 and the
-OCR pipelines failed all 13 -- thirteen cases carrying one bit each way. For
-the vision pipelines they did estimate something real (5/10 for one model,
-9/10 for a stronger one, a difference worth knowing). So the set was
-simultaneously over-precise about one rate and blind everywhere else.
-
-### The rule
+### At authoring time
 
 1. **Enumerate capabilities, not questions.** A capability is an operation
    crossed with a representation -- "sum across bins with an inclusive
@@ -322,25 +311,57 @@ simultaneously over-precise about one rate and blind everywhere else.
    read; two cannot break a tie.
 3. **Ceiling of about a third of the set on any one capability**, unless
    estimating that single rate precisely *is* the task's stated purpose. 13 of
-   22 is 59% and it bought one number.
+   22 is 59%.
 4. **Merge rule.** If two cases would be passed, and failed, by the same
    pipelines for the same reason, they are one case. Vary the operation, not
    the page number.
-5. **Audit after the first real run.** Cross-tabulate cases against arms and
-   group by the pass/fail vector. Identical rows are redundancy you have
-   already paid for -- and will pay for again on every rerun, because in a
-   document task each case ships another copy of the document.
 
-The last one is a five-line script and it is the only one of the five that
-tells you the truth rather than your intention. Write the intended budget down
-during the interview, then check it against the cross-tab once real runs
-exist.
+### After the first real runs: two checks, and only the second one binds
 
-### Where the freed cases should go
+**Per-item, which is cheap and insufficient.** Build the cases x arms matrix of
+pass/fail and compute, for each item, its difficulty (share of arms passing)
+and its discrimination (point-biserial against each arm's total). Standard
+thresholds from test construction: keep difficulty in **0.2-0.8**, treat
+discrimination **above 0.4** as high and **below 0.2** as a rewrite, and drop
+anything with negative discrimination. An item at difficulty 0 or 1 is not the
+hardest or easiest item in the set -- it carries **no information at all**.
 
-In that task the redistribution was obvious once the cross-tab existed: the
-capabilities worth more cases were the ones a purpose-built script cannot
-fake -- distinguishing a bin's *label* from the *value* a table prints for the
-same quantity, and recognising a question the document declines to answer.
-Each had exactly one case. Those are also the cases that decide whether the
-task has a ceiling at all, which is the subject of the section above.
+On `pdf_chart_reading` this check passed comfortably: 19 of 22 items inside
+the difficulty band, 20 of 22 with discrimination above 0.4, three items
+flagged. It is the wrong answer.
+
+**Between items, which is what actually binds.** Correlate the items'
+pass/fail vectors with each other, and look at how many independent directions
+the set spans. Same task, same matrix:
+
+| Group | Items | Mean pairwise correlation |
+|---|---|---|
+| structure questions | 3 | **+1.00** -- three items, one item |
+| cross-bin aggregates | 3 | +0.88 |
+| bar readings | 10 | +0.61 |
+| whole set | 22 | +0.64 |
+
+A principal-component decomposition puts **90% of the variance in 4
+components, the first alone at 47%**. Twenty-two items, four directions.
+
+The reason the per-item check missed it is worth understanding, because it
+generalises: discrimination is measured against the *total*, so when the arm
+population is dominated by one capability gap -- here "can this pipeline see a
+chart at all", which separates two arms at 0/22 from the rest -- every item
+that discriminates that gap scores high. **Individually informative,
+collectively redundant.** Prune on similarity, not on per-item quality; the
+published version of this is maximum-independent-set selection over an
+item-similarity graph.
+
+The target to aim at: **effective dimensionality close to the number of
+capabilities you claimed in step 1.** Six claimed, four measured, and one of
+the four holding half the variance, is a set that will move as a block.
+
+### Where the freed cases go
+
+Toward whatever a purpose-built script cannot fake. In that task the two
+capabilities worth more cases were distinguishing a bin's *label* from the
+*value* a table prints for the same quantity, and recognising a question the
+document declines to answer -- each had exactly one case, and they are also
+the cases that decide whether the task has a ceiling at all, which is the
+subject of the section above.
