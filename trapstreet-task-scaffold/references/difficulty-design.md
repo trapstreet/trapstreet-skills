@@ -280,3 +280,67 @@ table prints and what a figure shows, a quantity the document declines to
 break down. One case of that kind (`case_21`: table 1 prints the longer-run
 value as 2.0, figure 3.C puts everyone in the bin labelled 1.9-2.0, and the
 question asks which *range*) is what a measuring script cannot fake.
+
+## Budget cases by capability, not by question
+
+`pdf_chart_reading` shipped 22 cases. Run against seven pipelines, they
+produced **11 distinct pass/fail patterns** -- half the set was, empirically,
+indistinguishable from another case in it. Thirteen of the 22 asked the same
+thing in different clothes: read one bar's height, varying only the figure and
+the panel. Meanwhile two capabilities got one case each, and both came back
+0/7, which is a result nobody can interpret: a single item cannot separate
+"cannot do this" from "unlucky once".
+
+The mistake has a specific origin worth recognising, because it is easy to
+repeat. The gold was a measured table of counts, and the easiest question to
+write against a table of counts is "how many in bin X". Ten of those got
+written. **Surface variety -- different figures, different panels -- was
+mistaken for variety in what was being tested.**
+
+### Two purposes, two different n
+
+Repeats are not waste. They are waste when the purpose is confused:
+
+| Purpose | What it asks | How many cases |
+|---|---|---|
+| **Coverage** | does this pipeline have the capability at all? | few; for a deterministic pipeline the second case adds almost nothing |
+| **Rate** | how often does a stochastic pipeline get it right? | n set by the precision wanted |
+
+On those 13 bar-reading cases the measuring pipeline passed all 13 and the
+OCR pipelines failed all 13 -- thirteen cases carrying one bit each way. For
+the vision pipelines they did estimate something real (5/10 for one model,
+9/10 for a stronger one, a difference worth knowing). So the set was
+simultaneously over-precise about one rate and blind everywhere else.
+
+### The rule
+
+1. **Enumerate capabilities, not questions.** A capability is an operation
+   crossed with a representation -- "sum across bins with an inclusive
+   boundary", not "question about figure 3.E". That task had six capabilities
+   and 22 questions.
+2. **Floor of three cases per capability.** One case is a coin flip you cannot
+   read; two cannot break a tie.
+3. **Ceiling of about a third of the set on any one capability**, unless
+   estimating that single rate precisely *is* the task's stated purpose. 13 of
+   22 is 59% and it bought one number.
+4. **Merge rule.** If two cases would be passed, and failed, by the same
+   pipelines for the same reason, they are one case. Vary the operation, not
+   the page number.
+5. **Audit after the first real run.** Cross-tabulate cases against arms and
+   group by the pass/fail vector. Identical rows are redundancy you have
+   already paid for -- and will pay for again on every rerun, because in a
+   document task each case ships another copy of the document.
+
+The last one is a five-line script and it is the only one of the five that
+tells you the truth rather than your intention. Write the intended budget down
+during the interview, then check it against the cross-tab once real runs
+exist.
+
+### Where the freed cases should go
+
+In that task the redistribution was obvious once the cross-tab existed: the
+capabilities worth more cases were the ones a purpose-built script cannot
+fake -- distinguishing a bin's *label* from the *value* a table prints for the
+same quantity, and recognising a question the document declines to answer.
+Each had exactly one case. Those are also the cases that decide whether the
+task has a ceiling at all, which is the subject of the section above.

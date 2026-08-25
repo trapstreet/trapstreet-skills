@@ -79,7 +79,12 @@ finished task discriminates; the rest is craft around them.
 6. **How many cases, and how are they organized into categories/tags?**
    Enough to give real signal (a handful of cases barely discriminates
    anything), but every case should be worth its inclusion -- don't pad
-   the count with near-duplicates of an already-covered pattern. Plan on
+   the count with near-duplicates of an already-covered pattern -- and note
+   that "near-duplicate" is a fact you can measure rather than a matter of
+   taste, so write the per-capability budget down here and check it against
+   the cross-tab after the first real run ("Budget cases by capability" in
+   `references/difficulty-design.md`; one task shipped 22 cases that produced
+   11 distinct pass/fail patterns). Plan on
    sourcing roughly **three times** what you intend to ship: SWE-bench
    Verified discarded 68.3% of naturally sourced candidates under review,
    and the probe below will discard some of yours.
