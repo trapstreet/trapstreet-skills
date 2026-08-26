@@ -281,6 +281,83 @@ break down. One case of that kind (`case_21`: table 1 prints the longer-run
 value as 2.0, figure 3.C puts everyone in the bin labelled 1.9-2.0, and the
 question asks which *range*) is what a measuring script cannot fake.
 
+## When the task varies a candidate set, difficulty moves for two reasons
+
+A whole family of tasks works by putting N options in front of the solver and
+asking which to use -- tool menus, skill catalogs, retrieval candidates,
+multiple choice. Three things about that family are easy to get wrong, and
+`core_capability_stacking_regression` got two of them wrong before they were
+noticed.
+
+### Accuracy across different N is not comparable without chance correction
+
+Picking the right 2 of 8 and the right 2 of 26 are not the same question, and
+the gap between them is partly just arithmetic: there are more ways to be
+wrong. Any curve plotted against catalog size therefore has a chance component
+baked into its slope, and any headline of the form "performance drops X% as
+the catalog grows" is reporting that component alongside whatever real effect
+exists.
+
+Two ways out, and the second is usually cheaper:
+
+- **Correct for it.** The retrieval literature's chance-corrected ranking
+  metrics (BEDROC and relatives) exist for exactly this, and give a
+  size-normalised number.
+- **Never compare across sizes without a matched-size control.** Run a second
+  condition at the *same* N that lacks the property under test. The
+  size-matched contrast is chance-safe even when neither arm's raw number is.
+
+A task that does the second gets the first for free on the contrast, but not
+on the raw arm. Say which one the headline is.
+
+### Choose distractors by a measured property, not by authoring intuition
+
+The decoy *budget* is a difficulty axis (above). Which decoys go in the budget
+is a separate decision, and hand-picking them makes "how confusable is this
+set" a claim about the author rather than a property of the task.
+
+The published method is to select **hard negatives by similarity**: embed the
+candidate descriptions, take the nearest neighbours of the correct answer as
+distractors. That converts confusability into a number you can put on the
+x-axis, sweep, and report per case -- and it stops the set from being solvable
+by keyword matching, which hand-written decoys often are.
+
+The distractor taxonomy worth covering, once the mechanism is measurable:
+near-duplicates of the right answer, options that are schema-compatible but
+wrong, actions that are right but premature, cross-domain irrelevancies, and
+high-consequence operations that should be declined. They are not
+interchangeable, and a set built entirely from one of them measures one thing
+while claiming to measure confusability in general.
+
+### Matched on the countable thing is not matched on the thing that fires
+
+The sharpest of the three, and it survived a full case set, a test suite
+asserting the parity, and two published runs.
+
+A paired design added N skills to each arm and asserted N equal at every level
+-- including the number of skills carrying standing instructions, 3 per pack
+on both sides. The parity was real and the assertion passed. But the treatment
+arm's instructions were triggerable by the requests ("whenever a document is
+exported...") and the control arm's were not ("whenever a batch is moved or
+racked...", to an office request). **Same count, zero applicability.** The
+control could not exhibit the mechanism at all, so the mechanism landed
+entirely in the measured gap and was read as the effect under test. It was
+about three quarters of it.
+
+The general form: **when a control is built by swapping content, check every
+property the swap changes, not just the one being held constant.** Counting is
+the property that is easy to assert, which is exactly why it is the one that
+gets asserted and the one that lulls.
+
+Two practical rules:
+
+- **For each mechanism the treatment can exhibit, ask whether the control
+  can.** If the answer is no, the control is not a control for that mechanism,
+  and the gap is a sum rather than a measurement.
+- **Prefer swapping one property at a time even when it costs an arm.** Two
+  arms measure a bundle; the third arm is what turns the bundle into an
+  attribution. Build it before publishing a number, not after someone asks.
+
 ## Budget cases by capability, and check the budget against the data
 
 `pdf_chart_reading` shipped 22 cases. Thirteen of them asked the same thing in

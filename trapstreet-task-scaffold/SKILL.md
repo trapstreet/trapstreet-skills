@@ -63,6 +63,23 @@ finished task discriminates; the rest is craft around them.
    probe rounds on one task raised depth and horizon and moved a 20/20
    ceiling not at all; changing what the document contains broke it on the
    first attempt.
+   **And if the task puts a set of options in front of the solver** -- a
+   tool menu, a skill catalog, retrieval candidates -- read "When the task
+   varies a candidate set" in the same file first. Accuracy at N=8 and
+   N=26 are not comparable without a chance correction or a size-matched
+   control; distractors picked by hand make confusability a claim about
+   the author rather than a property of the task; and a control arm
+   matched on the countable thing can be unmatched on the thing that
+   actually fires. All three shipped in one task before being caught, and
+   the third was about three quarters of its headline number.
+   Then ask the mirror question -- **what will make a bad solution score
+   badly?** -- and read `references/making-a-task-discriminate.md`, which
+   is where four case sets that separated nothing are written up. Its rule
+   is that **disorder is recoverable and absence is not**: a capable model
+   repairs a garbled input, so grading how well something survived grades
+   the repair. And verify the failure is actually present before authoring
+   a single case -- one task shipped 27 cases and returned 270 scores of
+   1.0.
 4. **Where does ground truth come from?** Computed from a seed (no answer
    for anyone to get wrong, and leakage is impossible by construction),
    real historical data (leakage risk, but credible), or hand-authored
