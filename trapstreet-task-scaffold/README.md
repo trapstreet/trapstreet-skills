@@ -20,11 +20,22 @@ matching false positives, anti-shotgun scoring, ground-truth leakage risk,
 licensing, and legal/IP considerations).
 
 It also carries the harder half of the problem: whether the task is
-actually *hard*, and how you'd know. Difficulty turns out to live in
-horizon and depth rather than per-step difficulty, capability gates get
-synthesised by anything with a shell, and a single run is noise -- eight
-rounds of design changes on one task produced conclusions that a repeat
-run showed were all reading the same ±1 spread.
+actually *hard*, whether it *separates* anything, and how you'd know.
+Difficulty turns out to live in horizon and depth rather than per-step
+difficulty, capability gates get synthesised by anything with a shell, and
+a single run is noise -- eight rounds of design changes on one task
+produced conclusions that a repeat run showed were all reading the same ±1
+spread. Separation is a different question with its own failures: a capable
+model repairs a garbled input, so grading how well something survived
+grades the repair, and four case sets on one task separated nothing before
+the fifth worked.
+
+Tasks that put a set of options in front of the solver -- a tool menu, a
+skill catalog, retrieval candidates -- get their own section, because
+accuracy at 8 options and at 26 is not comparable without a chance
+correction, hand-picked distractors make confusability a claim about the
+author rather than a property of the task, and a control arm matched on
+the countable thing can be entirely unmatched on the thing that fires.
 
 ## Installing
 
@@ -38,6 +49,7 @@ cp -r trapstreet-skills/trapstreet-task-scaffold ~/.claude/skills/trapstreet-tas
 ```
 SKILL.md                              # the skill itself
 references/difficulty-design.md       # what actually makes a task hard, and the fairness invariants
+references/making-a-task-discriminate.md  # why case sets separate nothing, and controls that only look like controls
 references/calibration.md             # probing, repeated trials, ablation, cost and latency
 references/traptask-contract.md       # authoritative task file layout + manifest contracts
 references/scoring-design.md          # real scoring exploits and how they were fixed
