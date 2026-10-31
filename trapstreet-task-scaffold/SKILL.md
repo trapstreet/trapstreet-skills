@@ -266,8 +266,20 @@ Once the task passes its own tests and `validate_task.py`, the latency
 check above is clear, and the legal/IP question from step 5 of the
 interview is resolved: commit, and
 -- after the user's explicit go-ahead (Ground rules above, no exception) --
-push to the shared task repo and (if this account can) register/publish the
-task on trapstreet.run so solutions can actually submit against it -- see
+push to the shared task repo and register the task on trapstreet.run so
+solutions can actually submit against it -- see
 `trapstreet-solution-scaffold`'s `check_provenance.py` for how a
 solution verifies a task is actually published before spending an API
 call trying to run against it.
+
+A maintainer's agent registers it with the CLI; the go-ahead above covers
+this command too, so show it to the user first:
+
+```bash
+tp task register owner/repo/path/to/task --id <id> --title "<title>" --tag <tag>
+```
+
+Anyone else's token gets a 403: register on the website at `/tasks/new`
+instead. Registering is not the last step for a task whose answers are
+private: a person still has to bind its grading pack at
+`/tasks/<id>/grading`, and no token can do that.
