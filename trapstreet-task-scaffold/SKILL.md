@@ -272,14 +272,14 @@ solutions can actually submit against it -- see
 solution verifies a task is actually published before spending an API
 call trying to run against it.
 
-A maintainer's agent registers it with the CLI; the go-ahead above covers
+An authorized account's agent registers it with the CLI; the go-ahead above covers
 this command too, so show it to the user first:
 
 ```bash
 tp task register owner/repo/path/to/task --id <id> --title "<title>" --tag <tag>
 ```
 
-Anyone else's token gets a 403: register on the website at `/tasks/new`
+Any other account's token gets a 403: register on the website at `/tasks/new`
 instead. Registering is not the last step for a task whose answers are
 private: a person still has to bind its grading pack at
 `/tasks/<id>/grading`, and no token can do that.
